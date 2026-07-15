@@ -2656,80 +2656,40 @@ Kolor kross_kolor_from_hex(uint32_t hex)
 // -------------------------------------
 Kolor kross_kolor_from_hsv(float h, float s, float v)
 {
-  // Credit: Alvy Ray Smith for creating the color format.
-  //--------------
-  if (h < 0) h   += 360;
-  if (h > 360) h -= 360;
-  //--------------
-  float normv = v/100;
-  float norms = s/100;
-  //--------------
-  float M = 255*normv;
-  float m = M*(1-norms);
-  float z = (M-m)*(1-fabs(fmodf(h/60, 2) - 1));
-  //--------------
-  if (0 <= h && h < 60)
-  {
-    int r = M;
-    int g = z+m;
-    int b = m;
-    return (Kolor){r, g, b, 255};
-  }
-  else if (60 <= h && h < 120)
-  {
-    int r = z+m;
-    int g = M;
-    int b = m;
-    return (Kolor){r, g, b, 255};
-  }
-  else if (120 <= h && h < 180)
-  {
-    int r = m;
-    int g = M;
-    int b = z+m;
-    return (Kolor){r, g, b, 255};
-  }
-  else if (180 <= h && h < 240)
-  {
-    int r = m;
-    int g = z+m;
-    int b = M;
-    return (Kolor){r, g, b, 255};
-  }
-  else if (240 <= h && h < 300)
-  {
-    int r = z+m;
-    int g = m;
-    int b = M;
-    return (Kolor){r, g, b, 255};
-  }
-  else if (300 <= h && h < 360)
-  {
-    int r = M;
-    int g = m;
-    int b = z+m;
-    return (Kolor){r, g, b, 255};
-  }
-
-  return (Kolor){0};
+  // Credit: Alvy Ray Smith
+  // --------------
+  h = kross_math_clampf(h, 0.0f, 1.0f);
+  s = kross_math_clampf(s, 0.0f, 1.0f);
+  v = kross_math_clampf(v, 0.0f, 1.0f);
+  
+  h *= 360.0f;
+  
+  float M = 255.0f * v;
+  float m = M * (1.0f-s);
+  float z = (M-m) * (1.0f-fabs(fmodf(h/60.0f, 2.0f) - 1.0f));
+  // --------------
+  if (h < 60)       return (Kolor){(uint8_t)M, (uint8_t)(z + m), (uint8_t)m, 255};
+  else if (h < 120) return (Kolor){(uint8_t)(z + m), (uint8_t)M, (uint8_t)m, 255};
+  else if (h < 180) return (Kolor){(uint8_t)m, (uint8_t)M, (uint8_t)(z + m), 255};
+  else if (h < 240) return (Kolor){(uint8_t)m, (uint8_t)(z + m), (uint8_t)M, 255};
+  else if (h < 300) return (Kolor){(uint8_t)(z + m), (uint8_t)m, (uint8_t)M, 255};
+  else              return (Kolor){(uint8_t)M, (uint8_t)m, (uint8_t)(z + m), 255};
 }
 // -------------------------------------
 Kolor kross_kolor_from_cmyk(float c, float m, float y, float k)
 {
-  // Credit: James Clerk Maxwell for coming up with the idea.
-  // Credit: Albert Henry for refining the idea.
-  //--------------
-  float normc = c/100;
-  float normm = m/100;
-  float normy = y/100;
-  float normk = k/100;
-  //--------------
-  int r = 255*(1-normc)*(1-normk);
-  int g = 255*(1-normm)*(1-normk);
-  int b = 255*(1-normy)*(1-normk);
-  //--------------
+  // Credit: James Clerk Maxwell / Albert Henry
+  // --------------
+  c = kross_math_clampf(c, 0.0f, 1.0f);
+  m = kross_math_clampf(m, 0.0f, 1.0f);
+  y = kross_math_clampf(y, 0.0f, 1.0f);
+  k = kross_math_clampf(k, 0.0f, 1.0f);
+  // --------------
+  uint8_t r = (uint8_t)(255.0f * (1.0f - c) * (1.0f - k));
+  uint8_t g = (uint8_t)(255.0f * (1.0f - m) * (1.0f - k));
+  uint8_t b = (uint8_t)(255.0f * (1.0f - y) * (1.0f - k));
+  // --------------
   return (Kolor){r, g, b, 255};
-  //--------------
 }
 // -------------------------------------
 // Quick yap sesh.
