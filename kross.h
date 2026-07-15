@@ -831,7 +831,7 @@ void kross_kanvas_fill(Kanvas* kv, Kolor kolor)
   // You might be wondering: "Wait, isnt the canvas 2D? 
   // Why arent we using an x and y loop here?"
   // 
-  // In memory, a 2D image isnt actually a 2D grid; its just a massive 
+  // In memory, a 2D image isnt actually a 2D grid, its just a massive 
   // 1D line of pixels laid out end-to-end (row 1, then row 2, etc.).
   // When we dont care about specific X/Y coordinates and just want to 
   // hit every single pixel, a single 1D loop from 0 to width*height 
@@ -2056,9 +2056,9 @@ void kross_kanvas_triangle_tricolor(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor
   int bias1 = kross_math_triangle_edge_is_top_left(v1, v2) ? 0 : -1;
   int bias2 = kross_math_triangle_edge_is_top_left(v2, v0) ? 0 : -1;
   //--------------
-  for (int x = min_x; x <= max_x; ++x)
+  for (int y = min_y; y <= max_y; ++y)
   {
-    for (int y = min_y; y <= max_y; ++y)
+    for (int x = min_x; x <= max_x; ++x)
     {
       //--------------
       int w0 = kross_math_triangle_edge_func(v0, v1, (Vek2){x, y})+bias0;
