@@ -3,6 +3,7 @@
 #include "kross.h"
 #include <math.h>
 
+// To be fully honest, this file was made with AI.
 int main(void)
 {
   Kanvas* kv = kv_init(640, 480);
