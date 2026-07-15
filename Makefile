@@ -1,5 +1,6 @@
+# ALWAYS make sure you use optimization flags, -O2 or -O3 are a must.
 CC = clang
-CFLAGS = -Wall -Wextra -O2 -std=c99
+CFLAGS = -Wall -Wextra -O2
 LDFLAGS = -lGL -lglfw -lm
 TARGET = build/kross
 SRC = main.c
