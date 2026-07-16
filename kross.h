@@ -27,7 +27,7 @@
 // AI USE
 // The rasterizer part of my library is all written by me.
 // The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
-// That part was coded by AI, and If you scroll to that section, (line: 2413), you will see why.
+// That part was coded by AI, and If you scroll to that section, (line: 2442), you will see why.
 // -------------------------------------
 #ifndef KROSS_H
 #define KROSS_H
@@ -114,6 +114,12 @@ typedef struct Rekt   { float x, y; size_t w, h;                         } Rekt;
 typedef enum KNoiseType  { KROSS_NOISE_VALUE, KROSS_NOISE_PERLIN                          } KNoiseType;
 typedef enum KInterpType { KROSS_INTERP_NNI,  KROSS_INTERP_BILINEAR, KROSS_INTERP_BICUBIC } KInterpType;
 typedef enum KInput {
+  // --------------
+  // Yes, I sat here and typed out every single one of these keycodes.
+  // Do you know how boring it is to assign numbers to the alphabet?
+  // It is the programming equivalent of doing lines in detention.
+  // "I will not make a custom engine... I will not make a custom engine..."
+  // --------------
   KROSS_INPUT_A            = 65,
   KROSS_INPUT_B            = 66,
   KROSS_INPUT_C            = 67,
@@ -298,10 +304,18 @@ Kolor   kross_kolor_from_hsv(float h, float s, float v);
 Kolor   kross_kolor_from_hex(uint32_t hex);
 Kolor   kross_kolor_from_cmyk(float c, float m, float y, float k);
 // -------------------------------------
+// --------------
+// "Why PPM and TGA?" I hear you ask. "Why not PNG, you absolute Neanderthal?"
+// Because PNG uses DEFLATE compression, and I would rather eat glass than write
+// A custom zlib compression algorithm in pure C just to save a screenshot.
+// PPM is literally just plain text: "P3, width, height, max_color, and raw RGB."
+// If you open a PPM in a text editor, you can literally read the pixels.
+// Its horribly bloated, but hey, it compiles in 5 lines of code.
 void    kross_file_ppm_write(Kanvas* kv, const char* path);
 Kanvas* kross_file_ppm_read(const char* path);
 void    kross_file_tga_write(Kanvas* kv, const char* path);
 Kanvas* kross_file_tga_read(const char* path);
+// --------------
 // -------------------------------------
 Vek2    kross_math_vek2_zero(void);
 Vek2    kross_math_vek2_one(void);
@@ -328,6 +342,14 @@ Vek2    kross_math_vek2_uv2screen(Vek2 uv, Vek2 kv);
 Vek2    kross_math_bezier_quad(Vek2 p0, Vek2 cp, Vek2 p1, float t);
 Vek2    kross_math_bezier_cube(Vek2 p0, Vek2 cp0, Vek2 cp1, Vek2 p1, float t);
 // -------------------------------------
+// --------------
+// Let me be completely honest with you, this section is never used once in the library.
+// Originally I wanted Kross to be a 2D and 3D software rasterizer,
+// Then I realized that writing 3D from scratch means dealing with matrix projections,
+// Clip spaces and depth buffers, things my tiny brain was not prepared for.
+// So instead of deleting everything, I left the useless 3D vector math here.
+// Its a tombstone for my dead dreams.
+// (Who said Shakespeare died?).
 Vek3    kross_math_vek3_zero(void);
 Vek3    kross_math_vek3_one(void);
 Vek3    kross_math_vek3_add(Vek3 v0, Vek3 v1);
@@ -350,14 +372,21 @@ Vek3    kross_math_vek3_translate_z(Vek3 v0, float dz);
 Vek2    kross_math_vek3_project(Vek3 v0);
 float   kross_math_lerp(float start, float end, float t);
 float   kross_math_cerp(float x0, float x1, float x2, float x3, float t);
+// --------------
 // -------------------------------------
 float   kross_math_noise_2d(float x, float y, KNoiseType type);
 float   kross_math_noise_2d_fbm(float x, float y, int layer_count, float frequency_multiplier, float amplitude_multiplier, KNoiseType type);
 float   kross_math_noise_3d(float x, float y, float z, KNoiseType type);
 float   kross_math_noise_3d_fbm(float x, float y, float z, int layer_count, float frequency_multiplier, float amplitude_multiplier, KNoiseType type);
 // -------------------------------------
+// --------------
 float   kross_math_cv_deg2rad(float angle_in_degrees);
 float   kross_math_cv_rad2deg(float angle_in_radians);
+// Humans like to think in degrees (0 to 360). 
+// The C math library (<math.h>), however, lives in a pretentious world of Radians (0 to 2*PI).
+// If you pass "90" into cos(), it will not give you 0. It will give you a garbage decimal.
+// Use these functions to translate between "human brain" and "C math library."
+// --------------
 int     kross_math_clamp(int value, int min, int max);
 float   kross_math_clampf(float value, float min, float max);
 double  kross_math_clampd(double value, double min, double max);
@@ -2781,7 +2810,7 @@ Kolor kross_kolor_from_cmyk(float c, float m, float y, float k)
 // -------------------------------------
 // Quick yap sesh.
 // The file encoders/decoders are not commented yet.
-// Im waiting to implement QOI and maybe PNG, and then comment everything.
+// Im waiting to implement QOI and then comment everything.
 // -------------------------------------
 void kross_file_ppm_write(Kanvas* kv, const char* path)
 {
