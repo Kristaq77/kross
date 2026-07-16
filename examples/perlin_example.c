@@ -36,7 +36,7 @@ int main(void)
 // #pragma omp parallel for schedule(dynamic)
 // If we want better performance, we can use openmp, which multithreads the loop for us.
 // GCC comes with openmp prebuilt, so switch to gcc and type:
-// gcc perlin_example.c -fopenmp -lGL -lglfw -lm -o perlin_example && ./perlin_example
+// gcc perlin_example.c -fopenmp -lGL -lglfw -lm -O2 -o perlin_example && ./perlin_example
     for (int y = 0; y < kv->h; y += scale)
     {
       for (int x = 0; x < kv->w; x += scale)
