@@ -27,7 +27,7 @@
 // AI USE
 // The rasterizer part of my library is all written by me.
 // The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
-// That part was coded by AI, and If you scroll to that section, (line: 2414), you will see why.
+// That part was coded by AI, and If you scroll to that section, (line: 2413), you will see why.
 // -------------------------------------
 #ifndef KROSS_H
 #define KROSS_H
@@ -1143,9 +1143,8 @@ static Kanvas* kross_kanvas_scale_bicubic(Kanvas* kv, float scale)
   //--------------
   // Notice something terrifying?
   // Our target is in the center, which means we need a padding of *one entire pixel*
-  // around our target in every direction. 
+  // Around our target in every direction. 
   // You know what this means? It means more fun out of bounds checking, yay :) (send help).
-  // so we dont fetch memory from a completely different universe.
   //--------------
   // Personally, I still dont understand cubic interpolation, and you know what? Its okay.
   //--------------
