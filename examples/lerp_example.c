@@ -1,12 +1,13 @@
+// -------------------------------------
 #define KROSS_IMPLEMENTATION
 #define KROSS_STRIP_PREFIX
 #include "kross.h"
-
+// -------------------------------------
 int main(void)
 {
   // --------------
-  Kanvas* kanvas = kv_init(600, 400);
-  kw_init(kanvas, "Lerp");
+  Kanvas* kv = kv_init(600, 400);
+  kw_init(kv, "Lerp");
   kw_target_fps(60);
   // --------------
   Kolor kolor     = {0};
@@ -16,9 +17,9 @@ int main(void)
   size_t recth = 70;
   // --------------
   int start_x = 0;
-  int end_x = kanvas->w-rectw;
+  int end_x = kv->w-rectw;
   // --------------
-  int y = kanvas->h-recth;
+  int y = kv->h-recth;
   // --------------
   float move_duration = 5;
   float time_moved = 0;
@@ -27,15 +28,15 @@ int main(void)
   while (!kw_should_close())
   {
     // --------------
-    kv_start(kanvas);
-    kv_fill(kanvas, KLEAN_BLACK);
+    kv_start(kv);
+    kv_fill(kv, KLEAN_BLACK);
     // --------------
     // Eye candy.
     // --------------
-    kv_line(kanvas, 0, 0, kanvas->w, 0, 3, kolor);
-    kv_line(kanvas, 0, kanvas->h, kanvas->w, kanvas->h, 3, kolor);
-    kv_line(kanvas, 0, 0, 0, kanvas->h, 3, kolor_inv);
-    kv_line(kanvas, kanvas->w, 0, kanvas->w, kanvas->h, 3, kolor_inv);
+    kv_line(kv, 0, 0, kv->w, 0, 3, kolor);
+    kv_line(kv, 0, kv->h, kv->w, kv->h, 3, kolor);
+    kv_line(kv, 0, 0, 0, kv->h, 3, kolor_inv);
+    kv_line(kv, kv->w, 0, kv->w, kv->h, 3, kolor_inv);
     // --------------
     time_moved += kw_delta();
     lerp_t = time_moved/move_duration;
@@ -47,15 +48,17 @@ int main(void)
     kolor     = kl_lerp(KLEAN_YELLOW, KLEAN_RED, lerp_t);
     kolor_inv = kl_lerp(KLEAN_RED, KLEAN_YELLOW, lerp_t);
     // --------------
-    kv_rect(kanvas, lerp_x, y, rectw, recth, kolor);
-    kv_rect(kanvas, lerp_x_inv, 0, rectw, recth, kolor_inv);
+    kv_rect(kv, lerp_x, y, rectw, recth, kolor);
+    kv_rect(kv, lerp_x_inv, 0, rectw, recth, kolor_inv);
     // --------------
     if (lerp_t >= 1 && ki_once(KI_R)) time_moved = 0;
     // --------------
-    kv_stop(kanvas);
+    kv_stop(kv);
     // --------------
   }
 
   kw_free();
-  kv_free(kanvas);
+  kv_free(kv);
+  return 0;
 }
+// -------------------------------------
