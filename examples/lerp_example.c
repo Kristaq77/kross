@@ -5,7 +5,6 @@
 // -------------------------------------
 int main(void)
 {
-  // --------------
   Kanvas* kv = kv_init(600, 400);
   kw_init(kv, "Lerp");
   kw_target_fps(60);
@@ -54,7 +53,6 @@ int main(void)
     if (lerp_t >= 1 && ki_once(KI_R)) time_moved = 0;
     // --------------
     kv_stop(kv);
-    // --------------
   }
 
   kw_free();
