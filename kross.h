@@ -21,10 +21,13 @@
 // The point of Kross is not to replace your game engine.
 // The point is for you to read the source code, and learn graphics programming basics.
 // The code is slow, but I have a solid excuse, *educational*.
-//
-// Think of this as the "We have Raylib at home" meme.
 // Do not forget to strip the prefix if you decide to use Kross. Trust me.
 // Other than that, I hope you learn something from here :).
+// -------------------------------------
+// AI USE
+// The rasterizer part of my library is all written by me.
+// The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
+// That part was coded by AI, and If you scroll to that section, (line: 2414), you will see why.
 // -------------------------------------
 #ifndef KROSS_H
 #define KROSS_H
@@ -943,18 +946,17 @@ static Kanvas* kross_kanvas_scale_nni(Kanvas* kv, float scale)
   // 
   // Instead of doing complicated math to blend four pixels together, NNI just asks:
   // "If I map my new scaled coordinate back to the old original image, 
-  // what is the single closest pixel I land on?"
+  // What is the single closest pixel I land on?"
   // Then it just steals that exact color. No blending, no fading.
   //--------------
-  if (!kv || !kv->pixels || scale <= 0) return NULL;
+  if (!kv || !kv->pixels || scale <= 0.0f) return NULL;
   Kanvas* scaled = kross_kanvas_init(kv->w*scale, kv->h*scale);
   if (!scaled) return NULL;
   if (scale == 1.0f) return scaled;
-  
+  //--------------
   // Just like we will do in Bilinear, we invert the scale once here.
   // Multiplying by 0.5 is faster for the CPU than dividing by 2.0 thousands of times.
   float scale_inv = 1.0f/scale;
-  
   //--------------
   for (int y = 0; y < (int)scaled->h; ++y)
   {
@@ -967,8 +969,8 @@ static Kanvas* kross_kanvas_scale_nni(Kanvas* kv, float scale)
     if (src_y >= (int)kv->h) src_y = kv->h-1;
     //--------------
     // Pre-calculating the row offsets outside the X loop saves us from doing
-    // a bunch of (y * width) multiplications inside the innermost loop.
-    // Every little bit of performance counts!
+    // a bunch of (y*width) multiplications inside the innermost loop.
+    // Every little bit of performance counts, especially when this pea-brain is coding.
     //--------------
     int src_offset_y = src_y*kv->w;
     int dst_offset_y = y*scaled->w;
@@ -996,27 +998,35 @@ static Kanvas* kross_kanvas_scale_bilinear(Kanvas* kv, float scale)
   // "Bilinear interpolation is easy, first we find 4 pixels, 
   // then we horizontally lerp from left to right,
   // and finally we lerp vertically from top to bottom and thats it",
-  //
+  //--------------
+  // Its like someone telling you rocket science is easy, grab a giant metal tube,
+  // throw some fire inside and point it at the sky.
+  // Or like saying quantum physics is easy, take a ball, put some atoms in it, make it go boom.
+  // And thats how the atomic bomb was made.
+  //--------------
   // They completely skip over the absolute nightmare that is the math.
   // "Just lerp it, bro!" 
   // Okay, but which 4 pixels?
   // When you are at the bottom-right edge of the texture,
   // Where is the "right" or "bottom" pixel?
   // It doesnt exist. You are looking into a void of unallocated memory.
-  //
+  //--------------
   // And lets talk about the fractions.
   // To "just lerp," you need a weight (t) between 0.0 and 1.0.
   // Getting that weight requires mapping the pixel coordinate
   // of the new kanvas into a continuous floating-point coordinate on the old kanvas,
-  // subtracting the floor to get the fractional part, and keeping track of it for both axes.
-  //
-  // I watched 5 of these videos and I still couldnt figure this out,
-  // All because the way it was explained sounded smart and easy,
-  // but really I was given bread crumbs and expected to make bread.
+  // Subtracting the floor to get the fractional part, and keeping track of it for both axes.
+  // And what even is lerp? What even is life? So many questions.
+  //--------------
+  // Firstly, lerp is a function which tells us how far along we are between two points.
+  // Lerp is short for Linear Interpolation.
+  // Secondly, finding t and those 4 pixels is not that hard, we will prove this below.
+  // And from my own experience, Youtube is the last place to go to for learning graphics programming.
+  // (Unless the video is from Tsoding, again, thank you Tsoding for the sponsor).
   //--------------
   if (!kv || !kv->pixels) return NULL;
   Kanvas* scaled = kross_kanvas_init(kv->w*scale, kv->h*scale);
-  if (!scaled || scale == 0.0f) return NULL;
+  if (!scaled || scale <= 0.0f) return NULL;
   if (scale == 1.0f) return scaled;
   //--------------
   // We cache the inverted scale so we multiply instead of dividing.
@@ -1105,27 +1115,23 @@ static Kanvas* kross_kanvas_scale_bicubic(Kanvas* kv, float scale)
   //--------------
   // Here we go with Bicubic Interpolation,
   // This one is way more painful to implement,
-  //
-  // Lets address the elephant in the room: "Bi-cubic".
-  // Cubic means 3rd-degree polynomials.
-  // Bicubic means we are doing it in 2D.
-  // 
+  //--------------
   // Remember how Bilinear was looking at a 2x2 grid of 4 pixels? 
   // Bicubic looks at a 4x4 grid of sixteen pixels. 
   // Why? Because it doesnt just want to blend the colors,
   // It wants to analyze the *slope* of how the colors are changing,
   // So it can draw a smooth, continuous curve between them.
-  //
+  //--------------
   // This fixes the blurry, fuzzy look of Bilinear, but it introduces "overshoot".
   // Because it creates a sharp curve, if you go from a pitch-black pixel next to 
   // a bright white pixel, the math curve will literally whip past white, causing 
   // a weird, artificial "halo" or ringing effect at sharp edges. 
-  //
+  //--------------
   // To do this, we need a cubic weighting function, the most popular one is called the "Catmull-Rom" spline.
   // Instead of linear interpolation, we sample 4 pixels per row across 4 rows, 
   // perform 4 horizontal cubic blends, and then 1 vertical cubic blend on those results.
   // Thats 5 intense cubic calculations per channel, per pixel.
-  // 
+  //--------------
   // Here is the math layout of our 16-pixel hostage situation:
   //   p00   p10   p20   p30
   //    *_____*_____*_____*
@@ -1134,20 +1140,18 @@ static Kanvas* kross_kanvas_scale_bicubic(Kanvas* kv, float scale)
   //   p02   p12 | p22   p32        middle 2x2 grid (between p11 and p22)
   //    *_____*_____*_____*
   //   p03   p13   p23   p33
-  //
+  //--------------
   // Notice something terrifying?
   // Our target is in the center, which means we need a padding of *one entire pixel*
   // around our target in every direction. 
-  // If Bilinears edge case made us stare into the void,
-  // Bicubic makes us jump right into it.
-  // We have to clamp coordinates "x-1", "x", "x+1", and "x+2"
+  // You know what this means? It means more fun out of bounds checking, yay :) (send help).
   // so we dont fetch memory from a completely different universe.
-  //
+  //--------------
   // Personally, I still dont understand cubic interpolation, and you know what? Its okay.
   //--------------
   if (!kv || !kv->pixels) return NULL;
   Kanvas* scaled = kross_kanvas_init(kv->w*scale, kv->h*scale);
-  if (!scaled || scale == 0.0f) return NULL;
+  if (!scaled || scale <= 0.0f) return NULL;
   if (scale == 1.0f) return scaled;
   //--------------
   float scale_inv = 1.0f/scale;
@@ -1157,7 +1161,7 @@ static Kanvas* kross_kanvas_scale_bicubic(Kanvas* kv, float scale)
     for (int x = 0; x < (int)scaled->w; ++x)
     {
       //--------------
-      // You might think (atleast I did, but then again Im dumb so),
+      // You might think (at least I did, but then again Im dumb so),
       // That Bicubic and Bilinear would be similar,
       // I thought, if Bilinear looks at a rectangle, Bicubic looks at a cube,
       // NOPE, Bicubic doesnt go into a deeper dimension,
@@ -2119,6 +2123,10 @@ void kross_kanvas_linev(Kanvas* kv, Vek2 pos0, Vek2 pos1, size_t thicc, Kolor ko
 void kross_kanvas_line_arrow(Kanvas* kv, int x0, int y0, int x1, int y1, size_t thicc, size_t head_len, float head_angle, Kolor kolor)
 {
   //--------------
+  // This function is just math I dont understand.
+  // I dont even remember where I copied this function.
+  // All I did was change the names around and use my own functions.
+  //--------------
   kross_kanvas_line(kv, x0, y0, x1, y1, thicc, kolor);
   float rad_angle = kross_math_cv_deg2rad(head_angle);
   float angle = atan2(y1-y0, x1-x0);
@@ -2140,6 +2148,45 @@ void kross_kanvas_line_arrowv(Kanvas* kv, Vek2 v0, Vek2 v1, size_t thicc, size_t
 // -------------------------------------
 void kross_kanvas_line_bezier_quad(Kanvas* kv, Vek2 p0, Vek2 cp, Vek2 p1, size_t resolution, size_t thicc, Kolor kolor)
 {
+  // Credit: Paul de Casteljau (the first developer of the curves).
+  // Credit: Pierre Bezier (the guy they were named after).
+  //--------------
+  // Bezier curves sound scary, but they arent.
+  // Let me give a yt type explanation first, then an actual explanation.
+  // A bezier curve, is just nested lerps.
+  // If you do not know what lerp is, look below.
+  // So its a lerp that lerps between two other lerps.
+  // This specific bezier curve, is a quadratic bezier curve,
+  // So it has only one control point. Now, what is a control point?
+  // Say we have a straight line, from p0 to p1.
+  // This control point lives somewhere inside this line and it pulls the line,
+  // Like the string of a bow, thats a bezier curve, its a straight line until,
+  // A control point (our hand) goes and pulls on it, making it curve.
+  //--------------
+  // Lets code the bezier curve,
+  // float intermediate0 = lerp(p0, cp, t).
+  // Alright, many questions here,
+  // First, what is lerp? Lerp, or Linear Interpolation,
+  // Is a formula for finding how far along we are in between to points.
+  // t is always from 0 to 1, if we say something like,
+  // lerp(p0, p1, t: 0.5) then we will get the center of these two points.
+  // If t was 0.0, we would be at p0, and if t was 1.0 we would be at p1.
+  // Second, we lerp from p0 to the control point,
+  // Why? Because this is what actually starts creating the curve.
+  // float intermediate1 = lerp(cp, p1, t).
+  // Now we lerp back from the control point, to the second point.
+  // And at the very end, we lerp between these two intermediate values,
+  // float p_final = lerp(intermediate0, intermediate1, t).
+  // One last thing we have to go over is t, how do we find t?
+  // Like we said above, t is progress along these points,
+  // But how do we find t? Its pretty simple.
+  // We know computers cant draw actual curves like we humans can.
+  // So what they do instead, is draw many small lines and connect them together.
+  // This is what creates the curve illusion.
+  // And so to find t, lets say we want the bezier curve to be 30 small lines.
+  // We loop 30 times and divide i/30. Thats t, thats our progress.
+  // And you know whats really cool? Setting the "resolution" as we call it to 1.
+  // What do you think is going to happen? :)
   //--------------
   Vek2 point_pre = p0;
   //--------------
@@ -2153,10 +2200,27 @@ void kross_kanvas_line_bezier_quad(Kanvas* kv, Vek2 p0, Vek2 cp, Vek2 p1, size_t
     point_pre = point_bez;
     //--------------
   }
+  //--------------
+  // LEARNING RESOURCES: "Rasterizing Splines in C" - Tsoding.
+  //--------------
 }
 // -------------------------------------
 void kross_kanvas_line_bezier_cube(Kanvas* kv, Vek2 p0, Vek2 cp0, Vek2 cp1, Vek2 p1, size_t resolution, size_t thicc, Kolor kolor)
 {
+  // Credit: Paul de Casteljau (the first developer of the curves).
+  // Credit: Pierre Bezier (the guy they were named after).
+  //--------------
+  // Above we explained quadratic curves, now lets explain cubic curves.
+  // They are the exact same thing, the exact same concept, with one more step.
+  // Theres two control points, so its a more curved curve.
+  // And again, we just lerp from the first point to the first control point, 
+  // a = lerp(p0, cp0, t). Then from the first control point to the second,
+  // b = lerp(cp0, cp1, t). Then from the second control point to the second point.
+  // c = lerp(cp1, p1, t). And again, we lerp the lerps.
+  // final0 = lerp(a, b, t).
+  // final1 = lerp(b, c, t).
+  // final  = lerp(final0, final1, t).
+  // Done, thats the cubic bezier curve.
   //--------------
   Vek2 point_pre = p0;
   //--------------
@@ -2170,6 +2234,9 @@ void kross_kanvas_line_bezier_cube(Kanvas* kv, Vek2 p0, Vek2 cp0, Vek2 cp1, Vek2
     point_pre = point_bez;
     //--------------
   }
+  //--------------
+  // LEARNING RESOURCES: "Rasterizing Splines in C" - Tsoding.
+  //--------------
 }
 // -------------------------------------
 void kross_kanvas_grid(Kanvas* kv, int x, int y, size_t cols, size_t rows, size_t gap, size_t thicc, Kolor kolor)
@@ -2220,10 +2287,12 @@ Kamera* kross_kamera_init(Vek2 target, Vek2 target_dst, float zoom, float smooth
 // -------------------------------------
 void kross_kamera_free(Kamera* kr)
 {
-  // A whole ass function for a free() call.
+  // A whole function for a free() call.
   // Call me the next Terry A. Davis.
   if (kr) free(kr);
 }
+// -------------------------------------
+// All the camera functions are just the kanvas functions with converted coordinates.
 // -------------------------------------
 void kross_kamera_line(Kanvas* kv, Kamera* kr, int x0, int y0, int x1, int y1, size_t thicc, Kolor kolor)
 {
@@ -2235,7 +2304,6 @@ void kross_kamera_line(Kanvas* kv, Kamera* kr, int x0, int y0, int x1, int y1, s
 // -------------------------------------
 void kross_kamera_rect(Kanvas* kv, Kamera* kr, int x, int y, size_t width, size_t height, Kolor kolor)
 {
-  // Converting world coordinates to camera coordinates.
   Vek2 screen = kross_math_vek2_kamera(kr, (Vek2){x, y});
   size_t screen_width = width*kr->zoom;
   size_t screen_height = height*kr->zoom;
@@ -2273,7 +2341,6 @@ void kross_kamera_rect_stroker(Kanvas* kv, Kamera* kr, Rekt rect, size_t thicc, 
 // -------------------------------------
 void kross_kamera_circle(Kanvas* kv, Kamera* kr, int cx, int cy, size_t r, Kolor kolor)
 {
-  // Converting the coordinates.
   Vek2 screen = kross_math_vek2_kamera(kr, (Vek2){cx, cy});
   int screen_r = r*kr->zoom;
   kross_kanvas_circlev(kv, screen, screen_r, kolor);
@@ -2286,7 +2353,6 @@ void kross_kamera_circlev(Kanvas* kv, Kamera* kr, Vek2 center, size_t r, Kolor k
 // -------------------------------------
 void kross_kamera_circle_stroke(Kanvas* kv, Kamera* kr, int cx, int cy, size_t r, size_t thicc, Kolor kolor)
 {
-  // Converting the coordinates.
   Vek2 screen = kross_math_vek2_kamera(kr, (Vek2){cx, cy});
   int screen_r = r*kr->zoom;
   int screen_thicc = thicc*kr->zoom;
@@ -2300,7 +2366,6 @@ void kross_kamera_circle_strokev(Kanvas* kv, Kamera* kr, Vek2 center, size_t r, 
 // -------------------------------------
 void kross_kamera_triangle(Kanvas* kv, Kamera* kr, Vek2 v0, Vek2 v1, Vek2 v2, Kolor kolor)
 {
-  // Converting the coordinates to kr coordinates.
   Vek2 screen1 = kross_math_vek2_kamera(kr, v0);
   Vek2 screen2 = kross_math_vek2_kamera(kr, v1);
   Vek2 screen3 = kross_math_vek2_kamera(kr, v2);
@@ -2346,6 +2411,29 @@ void kross_kamera_boardv(Kanvas* kv, Kamera* kr, Vek2 pos, Vek2 colrow, size_t g
 {
   kross_kamera_board(kv, kr, pos.x, pos.y, colrow.x, colrow.y, gap, kl0, kl1);
 }
+// -------------------------------------
+// Alright let me rant a little bit about Windows here.
+// At first, when the library started, I was using OpenGL 3.2.
+// When the time came to release it, I wanted it to be cross-platform,
+// So it would work for Linux, MacOS, Windows, etc.
+// Linux and Mac are not picky, whatever OpenGL you use, theyre okay with.
+// Windows on the other hand, only exposes OpenGL 1.1 out of the box.
+// The pea-brains at Microsoft literally decided to freeze OpenGL support completely.
+// To use OpenGL 3.2 on Windows, I would need to use a tool like GLAD.
+// -------------------------------------
+// Now, why GLAD? Because, Windows does not let you statically link modern OpenGL functions.
+// They arent in the headers, instead, the graphics driver has them hidden away.
+// To get them, there are two ways:
+// 1. Go insane and manually ask the driver for each functions memory address.
+// 2. Use GLAD, guess where the name comes from.
+// Now between these two options, I decided to go for the third, using OpenGL 1.1.
+// Which is the only version Windows is okay with out of the box.
+// I LITERALLY HAD TO FIND OPENGL 1.1 CODE ONLINE TO COPY BECAUSE I KNOW JACK ABOUT OPENGL.
+// ALRIGHT? YOU KNOW WHAT THAT FEELS LIKE?
+// IT FEELS LIKE PERFORMING DARK NECROMANCY ON A 30 YEAR OLD API CORPSE USING CHATGPT AS MY SPELL BOOK.
+// (Just kidding, I used AI for this part. Yes, Im also a pea-brain,
+// I remember struggling on the for loop which fills the screen with two different colors).
+// To close it off, never read this section, its just boring outdated OpenGL code.
 // -------------------------------------
 GLFWwindow* window;
 unsigned int canvas_tex_id;
@@ -2726,29 +2814,15 @@ void kross_file_ppm_write(Kanvas* kv, const char* path)
 Kanvas* kross_file_ppm_read(const char* path)
 {
   //--------------
-  // Welcome to the Decoder. We are reading the file we (or someone else) wrote.
-  // We open the file in "rb" (read binary) mode.
-  //--------------
   FILE* f = fopen(path, "rb");
   if (!f) return NULL;
-  //--------------
-  // The first thing in a PPM is the magic number (like P6 or P3).
-  // It tells us how to read the rest of the file.
-  // We grab it as a string of max 2 characters.
   //--------------
   char format[3] = {0};
   if (fscanf(f, "%2s", format) != 1) { fclose(f); return NULL; }
   //--------------
-  // Next, we expect width, height, and maximum color value (usually 255).
-  // fscanf is great here because it automatically skips whitespace/newlines.
-  //--------------
   int kv_width = 0, kv_height = 0, kl_maxval = 0;
   if (fscanf(f, "%d %d %d", &kv_width, &kv_height, &kl_maxval) != 3)
   { fclose(f); return NULL; }
-  //--------------
-  // Now we have the dimensions! We can initialize our canvas memory.
-  // There is usually one single whitespace or newline character left
-  // before the binary pixel data starts, so we consume it with fgetc().
   //--------------
   Kanvas* kv = kv_init(kv_width, kv_height);
   int r = 0, g = 0, b = 0;
@@ -2759,24 +2833,17 @@ Kanvas* kross_file_ppm_read(const char* path)
     for (int i = 0; i < kv_width*kv_height; ++i)
     {
       //--------------
-      // In P6, data is stored as pure bytes (binary).
-      // We grab 3 consecutive bytes for R, G, and B.
-      //--------------
       r = fgetc(f);
       g = fgetc(f);
       b = fgetc(f);
       //--------------
-      // If the End Of File (EOF) is reached unexpectedly, our file is corrupted or short.
-      // We break the loop so we dont crash.
-      //--------------
       if (r == EOF || g == EOF || b == EOF) break;
-      // Building up the kanvas by writing the color to the pixels array.
       kv->pixels[i] = (Kolor){(uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)kl_maxval};
       //--------------
     }
   }
   //--------------
-  fclose(f); // Keep it clean! Free the file handle.
+  fclose(f);
   //--------------
   printf("------ FILE INFO ------\n");
   printf("Operation:  Read\n");
