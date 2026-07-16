@@ -39,7 +39,6 @@ int main(void)
 
   Vek2 min = km_vek2_min(v0, km_vek2_min(v1, v2));
   Vek2 max = km_vek2_max(v0, km_vek2_max(v1, v2));
-  size_t text_size = 3;
 
   float area = math_triangle_edge_func(v0, v1, v2);
   float w0 = 0.0f;
