@@ -27,7 +27,7 @@
 // AI USE
 // The rasterizer part of my library is all written by me.
 // The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
-// That part was coded by AI, and If you scroll to that section, (line: 2442), you will see why.
+// That part was coded by AI, and If you scroll to that section, (line: 2447), you will see why.
 // -------------------------------------
 #ifndef KROSS_H
 #define KROSS_H
@@ -801,25 +801,25 @@ void kross_kanvas_invert(Kanvas* kv)
   // I remember the first time I saw this was in a Tsoding video,
   // Watch Tsoding videos if you want to learn programming.
   // (Thank you Tsoding for the sponsor).
-  //
+  //--------------
   // Anyway, how does this work? What is XOR?
   // XOR or eXclusive OR compares two bits,
   // it outputs 1 if the inputs are different, 0 if they are the same.
-  //
+  //--------------
   // Wikipedia example:
   // 0 ^ 0 = 0
   // 1 ^ 1 = 0
   // 1 ^ 0 = 1
   // 0 ^ 1 = 1
-  //
+  //--------------
   // Because of this, XORing any bit with 1 flips its value,
   // all the 0s become 1s and all the 1s become 0s.
-  //
+  //--------------
   // Now lets show an actual example, with the color orange.
   // Red   = 255 (11111111 in binary)
   // Green = 165 (10100101 in binary)
   // Blue  =   0 (00000000 in binary)
-  //
+  //--------------
   // Now, look what happens when we XOR each channel with 255:
   // (255 in binary is a solid wall of ones: 11111111).
   // (also we use 255 because thats the max value for an RGB channel).
@@ -857,16 +857,16 @@ void kross_kanvas_invert(Kanvas* kv)
 void kross_kanvas_fill(Kanvas* kv, Kolor kolor)
 {
   //--------------
-  // Welcome to the simplest function in the library.
+  // This is the simplest function in the library.
   // We want to paint the entire kanvas one solid color.
-  // 
+  //--------------
   // You might be wondering: "Wait, isnt the canvas 2D? 
   // Why arent we using an x and y loop here?"
-  // 
+  //--------------
   // In memory, a 2D image isnt actually a 2D grid, its just a massive 
-  // 1D line of pixels laid out end-to-end (row 1, then row 2, etc.).
+  // 1D line of pixels laid out end-to-end (row 1, then row 2, etc).
   // When we dont care about specific X/Y coordinates and just want to 
-  // hit every single pixel, a single 1D loop from 0 to width*height 
+  // hit every single pixel, a single 1D loop from 0 to width*height
   // is mathematically cleaner and slightly faster.
   //--------------
   for (size_t i = 0; i < kv->w*kv->h; ++i)
@@ -879,17 +879,17 @@ void kross_kanvas_fill_horz(Kanvas* kv, Kolor kl_left, Kolor kl_right)
 {
   //--------------
   // Now we actually care about coordinates (left half vs right half),
-  // so we switch to a 2D nested loop. 
+  // So we switch to a 2D nested loop. 
   //
-  // Notice the order: the `y` loop (rows) is on the outside, 
-  // and the `x` loops (columns) are on the inside. 
+  // Notice the order: the "y" loop (rows) is on the outside, 
+  // And the "x" loops (columns) are on the inside. 
   // This is called "Row-Major Order" and it is EXACTLY how you 
-  // want to loop through images in C. 
+  // Want to loop through images in C. 
   // 
   // Why? CPU Cache Locality. 
-  // When the CPU grabs pixel(0,0) from RAM, it grabs the neighboring 
-  // pixels (1,0), (2,0), etc., at the same time and puts them in ultra-fast L1 cache. 
-  // By moving horizontally across the row, we read from that lightning-fast cache.
+  // When the CPU grabs pixel(0,0) from RAM, it grabs the neighboring,
+  // Pixels (1,0), (2,0), etc, at the same time and puts them in ultra-fast L1 cache.
+  // By moving horizontally across the row, we read exactly from that cache.
   //--------------
   for (int y = 0; y < (int)kv->h; ++y)
   {
@@ -905,23 +905,17 @@ void kross_kanvas_fill_horz(Kanvas* kv, Kolor kl_left, Kolor kl_right)
   }
 }
 // -------------------------------------
-void kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_top, Kolor kl_bottom)
+void kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_bot, Kolor kl_top)
 { 
   //--------------
-  // HOLD UP. Look closely at these loops.
-  // 
-  // The `x` loop is on the outside, and the `y` loops are on the inside.
-  // We are iterating vertically down columns rather than horizontally across rows.
-  // This is called "Column-Major Order", and in C, this is a 
-  // CACHE MISS NIGHTMARE!
+  // CHALLENGE
+  //--------------
+  // This code sucks performance wise (like most of my code).
+  // Because it iterates column-first (x on the outer loop), it jumps across
+  // Memory rows on every single pixel write, causing massive cache misses.
   //
-  // Because memory is laid out row-by-row, jumping from pixel(0,0) down to 
-  // pixel(0,1) means jumping completely over an entire row of memory.
-  // The CPU cache is useless here. It keeps having to fetch new chunks from slower RAM.
-  //
-  // In a small canvas, modern CPUs are fast enough that you wont notice.
-  // But on a 4K image? This function will run significantly slower than fill_horz.
-  // We are leaving it this way as a teaching moment: ALWAYS put your Y loop on the outside!
+  // I want you to rewrite this function so that it traverses the canvas row-by-row,
+  // (horizontally), taking full advantage of CPU cache lines.
   //--------------
   for (int x = 0; x < (int)kv->w; ++x)
   {
@@ -939,19 +933,6 @@ void kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_top, Kolor kl_bottom)
 // -------------------------------------
 Kanvas* kross_kanvas_copy(Kanvas* kv)
 {
-  //--------------
-  // What is a pointer, really? Its just a name tag with a memory address.
-  // If we just wrote: `Kanvas* new_kanvas = kv;`
-  // We wouldnt be duplicating the image. We would just be creating a second 
-  // name tag pointing to the EXACT SAME memory. Drawing on the copy 
-  // would draw on the original! 
-  // 
-  // This is the difference between a "Shallow Copy" (sharing memory) 
-  // and a "Deep Copy" (duplicating memory).
-  // 
-  // Here, we do a Deep Copy. We initialize brand new memory using `kross_kanvas_init`,
-  // and then painstakingly copy the color of every single pixel over to the new house.
-  //--------------
   if (!kv || !kv->pixels) return NULL;
   Kanvas* tmp = kross_kanvas_init(kv->w, kv->h);
 
@@ -972,7 +953,7 @@ static Kanvas* kross_kanvas_scale_nni(Kanvas* kv, float scale)
   // NNI stands for Nearest Neighbor Interpolation.
   // If Bilinear Interpolation (the next function) is a smooth, blurry gradient,
   // NNI is crispy, blocky Minecraft pixel art.
-  // 
+  //--------------
   // Instead of doing complicated math to blend four pixels together, NNI just asks:
   // "If I map my new scaled coordinate back to the old original image, 
   // What is the single closest pixel I land on?"
