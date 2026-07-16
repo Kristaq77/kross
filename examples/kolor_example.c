@@ -32,4 +32,5 @@ int main(void)
 
   kw_free();
   kv_free(kv);
+  return 0;
 }
