@@ -234,7 +234,7 @@ void    kross_kanvas_stop(Kanvas* kv);
 void    kross_kanvas_free(Kanvas* kv);
 void    kross_kanvas_fill(Kanvas* kv, Kolor kolor);
 void    kross_kanvas_fill_horz(Kanvas* kv, Kolor kl_left, Kolor kl_right);
-void    kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_top,  Kolor kl_bottom);
+void    kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_top,  Kolor kl_bot);
 Kanvas* kross_kanvas_copy(Kanvas* kv);
 Kanvas* kross_kanvas_scale(Kanvas* kv, float scale, KInterpType interp);
 Kanvas* kross_kanvas_rotate(Kanvas* kv, float angle_in_degrees, KInterpType interp);
@@ -926,7 +926,7 @@ void kross_kanvas_fill_vert(Kanvas* kv, Kolor kl_bot, Kolor kl_top)
 
     for (int bottom_y = kv->h/2; bottom_y < (int)kv->h; ++bottom_y)
     {
-      kross_kanvas_pixel(kv, x, bottom_y, kl_bottom);
+      kross_kanvas_pixel(kv, x, bottom_y, kl_bot);
     }
   }
 }
