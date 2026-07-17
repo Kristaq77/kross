@@ -17,8 +17,7 @@ Kross is developed and tested for Arch Linux (btw). It uses OpenGL 1.1 as a pres
 I wont be accepting contributions because this is a personal project, and I want it to stay that way.
 
 ## Examples
-Check out these files to see how the library works:
-
-* [**Hello World Example**](examples/hello_world.c)
-* [**Kolor Example**](examples/kolor_example.c)
-* [**Perlin Example**](examples/perlin_example.c)
+Here are some screenshots of a few basic programs I made a little white ago:
+![Interactive Snake Simulation](screenshots/snake_shot.png)
+![Interactive Pong Simulation](screenshots/pong_shot.png)
+![Interactive Bezier Simulation](screenshots/bezier_shot.png)
