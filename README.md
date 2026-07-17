@@ -13,12 +13,13 @@ This project is dedicated to God and Orthodox Christianity, as a small thank you
 # Compatibility
 Kross is developed and tested for Arch Linux (btw). It uses OpenGL 1.1 as a presenter so it should work fine for Windows too. If you run into any issues, let me know.
 
-## Contribution Policy
+# Contribution Policy
 I wont be accepting contributions because this is a personal project, and I want it to stay that way.
+
 # Examples
-## Snake
-![Interactive Snake Simulation](screenshots/snake_shot.png)
-## Pong
-![Interactive Pong Simulation](screenshots/pong_shot.png)
-## Bezier
-![Interactive Bezier Simulation](screenshots/bezier_shot.png)
+
+<p align="center">
+  <img src="screenshots/snake_shot.png" width="32%" alt="Interactive Snake Simulation">
+  <img src="screenshots/pong_shot.png" width="32%" alt="Interactive Pong Simulation">
+  <img src="screenshots/bezier_shot.png" width="32%" alt="Interactive Bezier Simulation">
+</p>
