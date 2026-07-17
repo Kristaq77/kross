@@ -23,3 +23,7 @@ I wont be accepting contributions because this is a personal project, and I want
   <img src="screenshots/pong_shot.png" width="32%" alt="Interactive Pong Simulation">
   <img src="screenshots/bezier_shot.png" width="32%" alt="Interactive Bezier Simulation">
 </p>
+<p align="center">
+  <img src="screenshots/triangle_shot.png" width="32%" alt="RGB Triangle Example">
+  <img src="screenshots/barycentric_shot.png" width="32%" alt="Interactive Barycentric Simulation">
+</p>
