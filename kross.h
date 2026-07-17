@@ -2081,9 +2081,9 @@ void kross_kanvas_triangle_tricolor(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor
       if (w0 >= 0 && w1 >= 0 && w2 >= 0)
       {
         //--------------
-        float alpha = w0*karea;
-        float beta  = w1*karea;
-        float gamma = w2*karea;
+        float alpha = w1*karea;
+        float beta  = w2*karea;
+        float gamma = w0*karea;
         //--------------
         int r = alpha*kl0.r+beta*kl1.r+gamma*kl2.r;
         int g = alpha*kl0.g+beta*kl1.g+gamma*kl2.g;
