@@ -1,6 +1,7 @@
 // -------------------------------------
 // MIT License
-// Copyright (c) 2026 Kristaq                                                                 
+// Copyright (c) 2026 Kristaq
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -27,7 +28,7 @@
 // AI USE
 // The rasterizer part of my library is all written by me.
 // The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
-// That part was coded by AI, and If you scroll to that section, (line: 2447), you will see why.
+// That part was coded by AI, and If you scroll to that section, (line: 2420), you will see why.
 // -------------------------------------
 #ifndef KROSS_H
 #define KROSS_H
@@ -312,6 +313,7 @@ Kolor   kross_kolor_from_cmyk(float c, float m, float y, float k);
 // If you open a PPM in a text editor, you can literally read the pixels.
 // Its horribly bloated, but hey, it compiles in 5 lines of code.
 void    kross_file_ppm_write(Kanvas* kv, const char* path);
+void    kross_file_ppm_print(const char* path);
 Kanvas* kross_file_ppm_read(const char* path);
 void    kross_file_tga_write(Kanvas* kv, const char* path);
 Kanvas* kross_file_tga_read(const char* path);
@@ -348,8 +350,7 @@ Vek2    kross_math_bezier_cube(Vek2 p0, Vek2 cp0, Vek2 cp1, Vek2 p1, float t);
 // Then I realized that writing 3D from scratch means dealing with matrix projections,
 // Clip spaces and depth buffers, things my tiny brain was not prepared for.
 // So instead of deleting everything, I left the useless 3D vector math here.
-// Its a tombstone for my dead dreams.
-// (Who said Shakespeare died?).
+// Its a tombstone for my dead dreams. (Who said Shakespeare died?).
 Vek3    kross_math_vek3_zero(void);
 Vek3    kross_math_vek3_one(void);
 Vek3    kross_math_vek3_add(Vek3 v0, Vek3 v1);
@@ -972,7 +973,7 @@ static Kanvas* kross_kanvas_scale_nni(Kanvas* kv, float scale)
   {
     //--------------
     // The magic of Nearest Neighbor: casting a float to an int simply chops off 
-    // the decimals (truncation). If `y * scale_inv` is 14.9, `src_y` just becomes 14.
+    // the decimals (truncation). If y*scale_inv is 14.9, src_y just becomes 14.
     // We also make sure we dont accidentally ask for a pixel outside the image bounds.
     //--------------
     int src_y = (int)(y*scale_inv);
@@ -1064,8 +1065,8 @@ static Kanvas* kross_kanvas_scale_bilinear(Kanvas* kv, float scale)
       // x0 (top-left) would be 14, x1 is top-left + 1pixel, which becomes top-right,
       // Also we make sure that everything is inside the buffer, so we dont segfault.
       //--------------
-      int x0 = floorf(src_x);
-      int y0 = floorf(src_y);
+      int x0 = src_x;
+      int y0 = src_y;
       int x1 = (x0+1 < (int)kv->w)  ? x0+1 : x0;
       int y1 = (y0+1 < (int)kv->h)  ? y0+1 : y0;
       //--------------
@@ -1194,8 +1195,8 @@ static Kanvas* kross_kanvas_scale_bicubic(Kanvas* kv, float scale)
       //--------------
       float src_x = x*scale_inv;
       float src_y = y*scale_inv;
-      int base_x = floorf(src_x);
-      int base_y = floorf(src_y);
+      int base_x = src_x;
+      int base_y = src_y;
       //--------------
       // Making sure we are safe here, because the Segfault gremlin loves unexpected surprises.
       int x0 = (base_x-1 >= 0) ? base_x-1 : 0;
@@ -1316,8 +1317,8 @@ static Kanvas* kross_kanvas_rotate_bilinear(Kanvas* kv, float angle_in_degrees)
       src_x = kross_math_clampf(src_x, 0, kv->w-1);
       src_y = kross_math_clampf(src_y, 0, kv->h-1);
 
-      int x0 = floorf(src_x);
-      int y0 = floorf(src_y);
+      int x0 = src_x;
+      int y0 = src_y;
       int x1 = (x0+1 < (int)kv->w) ? x0+1 : x0;
       int y1 = (y0+1 < (int)kv->h) ? y0+1 : y0;
 
@@ -1358,8 +1359,8 @@ static Kanvas* kross_kanvas_rotate_bicubic(Kanvas* kv, float angle_in_degrees)
       src_x = kross_math_clampf(src_x, 0, kv->w-1);
       src_y = kross_math_clampf(src_y, 0, kv->h-1);
 
-      int base_x = floorf(src_x);
-      int base_y = floorf(src_y);
+      int base_x = src_x;
+      int base_y = src_y;
       int x0 = (base_x-1 >= 0) ? base_x-1 : 0;
       int y0 = (base_y-1 >= 0) ? base_y-1 : 0;
       int x1 = base_x;
@@ -2020,8 +2021,8 @@ void kross_kanvas_triangle(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor kolor)
   // Welcome to the heart of the rasterizer,
   // To the most painful, yet most beautiful function in graphics programming,
   // For this one, I had the pleasure of following one of Pikumas guides,
-  // If youve never heard of Pikuma or seen a video form him,
-  // Then go. Im not gonna waste your time and clutter your brain on this one,
+  // If youve never heard of Pikuma or seen a video form him, then go.
+  // Im not gonna waste your time and clutter your brain on this one,
   // The best way to learn how triangle rasterizing works,
   // is to go and watch that hour long video.
   // The video is titled: "Triangle Rasterization - Pikuma".
@@ -2063,7 +2064,7 @@ void kross_kanvas_triangle_tricolor(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor
   float area = kross_math_triangle_edge_func(v0, v1, v2);
   if (area <= 0) return;
   //--------------
-  float karea = 1.0f/fabsf(area);
+  float karea = 1.0f/area;
   //--------------
   int bias0 = kross_math_triangle_edge_is_top_left(v0, v1) ? 0 : -1;
   int bias1 = kross_math_triangle_edge_is_top_left(v1, v2) ? 0 : -1;
@@ -2073,14 +2074,12 @@ void kross_kanvas_triangle_tricolor(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor
   {
     for (int x = min_x; x <= max_x; ++x)
     {
-      //--------------
       int w0 = kross_math_triangle_edge_func(v0, v1, (Vek2){x, y})+bias0;
       int w1 = kross_math_triangle_edge_func(v1, v2, (Vek2){x, y})+bias1;
       int w2 = kross_math_triangle_edge_func(v2, v0, (Vek2){x, y})+bias2;
       //--------------
       if (w0 >= 0 && w1 >= 0 && w2 >= 0)
       {
-        //--------------
         float alpha = w1*karea;
         float beta  = w2*karea;
         float gamma = w0*karea;
@@ -2088,8 +2087,8 @@ void kross_kanvas_triangle_tricolor(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, Kolor
         int r = alpha*kl0.r+beta*kl1.r+gamma*kl2.r;
         int g = alpha*kl0.g+beta*kl1.g+gamma*kl2.g;
         int b = alpha*kl0.b+beta*kl1.b+gamma*kl2.b;
-        kross_kanvas_pixel(kv, x, y, (Kolor){r, g, b, 255});
         //--------------
+        kross_kanvas_pixel(kv, x, y, (Kolor){r, g, b, 255});
       }
     }
   }
@@ -2104,7 +2103,6 @@ void kross_kanvas_triangle_stroke(Kanvas* kv, Vek2 v0, Vek2 v1, Vek2 v2, size_t 
 // -------------------------------------
 void kross_kanvas_line(Kanvas* kv, int x0, int y0, int x1, int y1, size_t thicc, Kolor kolor)
 {
-  //--------------
   Vek2 start = {x0, y0};
   Vek2 end = {x1, y1};
   Vek2 dir = kross_math_vek2_sub(end, start);
@@ -2121,7 +2119,6 @@ void kross_kanvas_line(Kanvas* kv, int x0, int y0, int x1, int y1, size_t thicc,
   //--------------
   kross_kanvas_triangle(kv, v0, v2, v1, kolor);
   kross_kanvas_triangle(kv, v1, v2, v3, kolor);
-  //--------------
 }
 // -------------------------------------
 void kross_kanvas_linev(Kanvas* kv, Vek2 pos0, Vek2 pos1, size_t thicc, Kolor kolor)
@@ -2147,7 +2144,6 @@ void kross_kanvas_line_arrow(Kanvas* kv, int x0, int y0, int x1, int y1, size_t 
   //--------------
   kross_kanvas_line(kv, x1, y1, x2, y2, thicc, kolor);
   kross_kanvas_line(kv, x1, y1, x3, y3, thicc, kolor);
-  //--------------
 }
 // -------------------------------------
 void kross_kanvas_line_arrowv(Kanvas* kv, Vek2 v0, Vek2 v1, size_t thicc, size_t head_len, float head_angle, Kolor kolor)
@@ -2176,7 +2172,7 @@ void kross_kanvas_line_bezier_quad(Kanvas* kv, Vek2 p0, Vek2 cp, Vek2 p1, size_t
   // float intermediate0 = lerp(p0, cp, t).
   // Alright, many questions here,
   // First, what is lerp? Lerp, or Linear Interpolation,
-  // Is a formula for finding how far along we are in between to points.
+  // Is a formula for finding how far along we are in between two points.
   // t is always from 0 to 1, if we say something like,
   // lerp(p0, p1, t: 0.5) then we will get the center of these two points.
   // If t was 0.0, we would be at p0, and if t was 1.0 we would be at p1.
@@ -2434,7 +2430,7 @@ void kross_kamera_boardv(Kanvas* kv, Kamera* kr, Vek2 pos, Vek2 colrow, size_t g
 // They arent in the headers, instead, the graphics driver has them hidden away.
 // To get them, there are two ways:
 // 1. Go insane and manually ask the driver for each functions memory address.
-// 2. Use GLAD, guess where the name comes from.
+// 2. Use GLAD (guess where the name comes from).
 // Now between these two options, I decided to go for the third, using OpenGL 1.1.
 // Which is the only version Windows is okay with out of the box.
 // I LITERALLY HAD TO FIND OPENGL 1.1 CODE ONLINE TO COPY BECAUSE I KNOW JACK ABOUT OPENGL.
@@ -2678,14 +2674,58 @@ Kolor kross_kolor_scale(Kolor kolor, float scale)
 // -------------------------------------
 Kolor kross_kolor_blend(Kolor kl0, Kolor kl1)
 {
+  // Credit: Alvy Ray Smith & Ed Catmull for coming up with alpha compositing.
+  // --------------
+  // Tiny optimization here, if the foreground (kl0) is completely opaque,
+  // That means its completely hiding its background, so just display it.
+  // If the foreground is completely transparent, display the background (kl1).
+  // --------------
   if (kl0.a == 255) return kl0;
   if (kl0.a == 0)   return kl1;
-
+  // --------------
+  // FEAR NOT the scary bit-shifts. They are very simple, very nice.
+  // This example of a bit-shift, is called a right bit-shift,
+  // A right bit-shift is equivalent to division, but its in binary.
+  // So >> 8 is not dividing by 8, its dividing by 2^8 which is 256.
+  // When I first learned this, I thought why noy just use >>/<< everywhere,
+  // Its much quicker and it works the same right? Well yes but no.
+  // Firstly, you cannot bit-shift a float/double, only integers.
+  // Secondly it is preferred to only do this on unsigned integers.
+  // Thirdly, do you really want to say 2 << 2 instead of 2*4?
+  // --------------
+  // The standard formula with floats is:
+  // result = (foreground*alpha) + (background*(1-alpha))
+  // You might ask, where did you get division from you idiot?
+  // Firstly, ouch. Secondly, the division is hiding. I know, element of surprise.
+  // In this formula, alpha is measured from 0.0 to 1.0.
+  // In this code, the alpha channel is a byte, so we have to convert it from 0-255 to 0-1.
+  // --------------
+  // Lets manually calculate this as an example:
+  // Say kl0.r = 200, kl0.a = 180, so kl0.r*kl0.a = 36000.
+  // 36000 in binary is: 1000110010100000.
+  // >> 8 means "shift every single digit 8 spots to the right).
+  // So we take that whole line, and slide it:
+  // --------------
+  //      1000110010100000 (Before)
+  // >> 8 0000000010001100 (After)
+  // --------------
+  // Notice how the last 8 digits just walked the plank?
+  // This chunk: 10100000 got completely pushed off the edge, its deleted.
+  // The front filled in with 8 fresh zeros.
+  // So our final answer: 0000000010001100 is 140.
+  // Lets check: 36000/256 = 140.625, 0.625 gets chopped off.
+  // That lost precision right there is what the trade-off of this method is.
+  // Thankfully its so small that the human eye cannot see it.
+  // --------------
   uint8_t r = (uint8_t)((kl0.r*kl0.a + kl1.r*(255-kl0.a)) >> 8);
   uint8_t g = (uint8_t)((kl0.g*kl0.a + kl1.g*(255-kl0.a)) >> 8);
   uint8_t b = (uint8_t)((kl0.b*kl0.a + kl1.b*(255-kl0.a)) >> 8);
+  // --------------
+  // Alpha is slightly different, kl0s opacity counts in full, (its on top).
+  // We only add whatever sliver of kl1 peeks through any gaps kl0 didnt cover.
+  // --------------
   uint8_t a = (uint8_t)(kl0.a +       (kl1.a*(255-kl0.a)  >> 8));
-  
+  // --------------
   return (Kolor){r, g, b, a};
 }
 // -------------------------------------
@@ -2743,11 +2783,60 @@ bool kross_kolor_compare_rgba(Kolor kl0, Kolor kl1)
 // -------------------------------------
 Kolor kross_kolor_from_hex(uint32_t hex)
 {
+  // --------------
+  // AGAIN, DO NOT BE SCARED. This one is actually a lot of fun.
+  // (This is a pretty long explanation, since there is quite a few new things).
+  // --------------
+  // What were doing is turning a single hexadecimal number into RRGGBBAA.
+  // Each pair is one byte. For example:
+  // 0xAABBCCDD, laid out as 4 bytes is:
+  // --------------
+  //    AA    BB    CC    DD
+  //    ---   ---   ---   --- 
+  //   | R | | G | | B | | A |
+  //   |---| |---| |---| |---|
+  //     3     2     1      0
+  // --------------
+  // See how R is on the far left and A is on the far right?
+  // It means we have to bring R back down to one byte.
+  // Look at those numbers underneath, index 0, 1, 2, 3.
+  // Not only are they an index, theyre also a weight.
+  // This means we have to shift right by 3 bytes to get R.
+  // Again bit shifts, like the name, shift in bits.
+  // How many bits are 3 bytes? 3*8 = 24 bits.
+  // --------------
+  // Alright, were done explaining the bit-shifts, now to explain the bitwise AND operator.
+  // If youve done C/C++ before, you probably know & as the addressof operator.
+  // It has one more use tho, when & sits in between two numbers it turns into bitwise AND.
+  // What it does is it goes over both numbers bit by bit,
+  // And it only keeps a 1 where both numbers have 1, anything else becomes 0.
+  // Quick example:
+  // --------------
+  //   1010
+  // & 1100
+  // result: 1000 (only the spot where both ones align survives).
+  // --------------
+  // 0xFF is 8 ones in a row: 11111111.
+  // ANDing anything with 0xFF is basically a filter, it says "keep
+  // whatevers in the last 8 bits, and force everything above that
+  // straight to 0", theres no other way to get a 1 out the other
+  // side unless 0xFF also had a 1 there, and it only does in the
+  // last 8 spots. thats why people call this "masking", 0xFF is
+  // literally masking off everything except the byte we want.
+  // Heres an example (for finding the blue channel):
+  // --------------
+  //         10101010 10111011   (0x0000AABB, after >> 16)
+  // &       00000000 11111111   (0xFF)
+  // result: 00000000 10111011   (0x000000BB)
+  // --------------
+  // At the very end, we dont have to shift A at all.
+  // Because it already is at the right spot.
+  // --------------
   uint8_t r = (hex >> 24)&0xFF;
   uint8_t g = (hex >> 16)&0xFF;
   uint8_t b = (hex >> 8)&0xFF;
   uint8_t a = hex;
-
+  // --------------
   return (Kolor){r, g, b, a};
 }
 // -------------------------------------
@@ -2758,9 +2847,9 @@ Kolor kross_kolor_from_hsv(float h, float s, float v)
   h = kross_math_clampf(h, 0.0f, 1.0f);
   s = kross_math_clampf(s, 0.0f, 1.0f);
   v = kross_math_clampf(v, 0.0f, 1.0f);
-  
+  // --------------
   h *= 360.0f;
-  
+  // --------------
   float M = 255.0f * v;
   float m = M * (1.0f-s);
   float z = (M-m) * (1.0f-fabs(fmodf(h/60.0f, 2.0f) - 1.0f));
@@ -2775,21 +2864,20 @@ Kolor kross_kolor_from_hsv(float h, float s, float v)
 // -------------------------------------
 Kolor kross_kolor_from_cmyk(float c, float m, float y, float k)
 {
-  // Credit: James Clerk Maxwell / Albert Henry
+  // Credit: James Clerk Maxwell & Albert Henry
   // --------------
   c = kross_math_clampf(c, 0.0f, 1.0f);
   m = kross_math_clampf(m, 0.0f, 1.0f);
   y = kross_math_clampf(y, 0.0f, 1.0f);
   k = kross_math_clampf(k, 0.0f, 1.0f);
   // --------------
-  uint8_t r = (uint8_t)(255.0f * (1.0f - c) * (1.0f - k));
-  uint8_t g = (uint8_t)(255.0f * (1.0f - m) * (1.0f - k));
-  uint8_t b = (uint8_t)(255.0f * (1.0f - y) * (1.0f - k));
+  uint8_t r = (uint8_t)(255.0f*(1.0f-c)*(1.0f-k));
+  uint8_t g = (uint8_t)(255.0f*(1.0f-m)*(1.0f-k));
+  uint8_t b = (uint8_t)(255.0f*(1.0f-y)*(1.0f-k));
   // --------------
   return (Kolor){r, g, b, 255};
 }
 // -------------------------------------
-// Quick yap sesh.
 // The file encoders/decoders are not commented yet.
 // Im waiting to implement QOI and then comment everything.
 // -------------------------------------
@@ -3382,8 +3470,9 @@ static float kross_math_noise_2d_value(float x, float y)
   // y: 345.75, y0 is 345, y1 is 346.
   // We can then use those values to generate 4 random points.
   // These 4 random points, represent a rectangle.
-  int x0 = floorf(x);
-  int y0 = floorf(y);
+  //--------------
+  int x0 = x;
+  int y0 = y;
   int x1 = x0+1;
   int y1 = y0+1;
   //--------------
@@ -3397,8 +3486,10 @@ static float kross_math_noise_2d_value(float x, float y)
   // Same thing for y, we get 345.75-345 = 0.75.
   // This means we are 3/4 (75%) of the way to the end vertically.
   // Shortly, u/v show how far (0%-100%) weve walked into this pixel.
+  //--------------
   float u = x-x0;
   float v = y-y0;
+  //--------------
   // Now we can literally treat u/v like t inside a lerp function.
   // This means can modify it just like t.
   // We modify it because plain UV looks too harsh.
@@ -3407,6 +3498,7 @@ static float kross_math_noise_2d_value(float x, float y)
   // You should even remove fade_u/v and use plain u/v.
   // This will show you a lot more clearly why we smoothen it out.
   // It doesnt look drastically better, but it looks better.
+  //--------------
   float fade_u = kross_math_ease_in_out_quint(u);
   float fade_v = kross_math_ease_in_out_quint(v);
   //--------------
@@ -3420,6 +3512,7 @@ static float kross_math_noise_2d_value(float x, float y)
   //    |                               |
   //    *_______________________________*
   //    (x0: 255, y1: 346)      (x1: 256, y1: 346)
+  //--------------
   float top_left       = kross_math_noise_hash_2d(x0, y0);
   float top_right      = kross_math_noise_hash_2d(x1, y0);
   float bottom_left    = kross_math_noise_hash_2d(x0, y1);
@@ -3432,9 +3525,11 @@ static float kross_math_noise_2d_value(float x, float y)
   // First we lerp from left-right horizontally.
   // Then we lerp again from left-right horizontally but on the bottom.
   // Lastly we lerp from top-bottom vertically.
+  //--------------
   float row_top      = kross_math_lerp(top_left, top_right, fade_u);
   float row_bottom   = kross_math_lerp(bottom_left, bottom_right, fade_u);
   return kross_math_lerp(row_top, row_bottom, fade_v);
+  //--------------
   // Thats it, thats Value Noise.
   // Sounds hard and complicated, but its just because explanations of it online suck.
   //--------------
@@ -3447,7 +3542,10 @@ static float kross_math_noise_2d_value_fbm(float x, float y, int layer_count, fl
   //--------------
   // Really quick, if you go online now and search for fbm,
   // Your eyes will be met with very, very pretentious names,
-  // layer_count is called "octvaes", frequency_multiplier is "lacunarity", amplitude is "gain".
+  // layer_count is called "octaves",
+  // frequency_multiplier is "lacunarity",
+  // amplitude is "gain".
+  //--------------
   // Fractional Brownian Motion (fbm) is used to layer multiple copies of noise.
   // Keeping track of the total, which will store the final combined noise value.
   //--------------
@@ -3460,17 +3558,18 @@ static float kross_math_noise_2d_value_fbm(float x, float y, int layer_count, fl
   // final number back down to a clean 0.0 to 1.0 range later.
   float max_value = 0.0f;
   //--------------
-  // Now we loop through and stack each layer of noise on top of the last one.
   for (int i = 0; i < layer_count; ++i)
   {
     //--------------
     // Multiply our coordinates by the frequency to scale the detail.
+    //--------------
     float sample_x = x*frequency;
     float sample_y = y*frequency;
     //--------------
     // Get the noise value for this layer.
     // Multiply it by its strength (amplitude).
     // Then add it to our running total.
+    //--------------
     total += kross_math_noise_2d_value(sample_x, sample_y)*amplitude;
     // Add the current strength to our maximum possible value tracker.
     max_value += amplitude;
@@ -3480,8 +3579,10 @@ static float kross_math_noise_2d_value_fbm(float x, float y, int layer_count, fl
     amplitude *= amplitude_multiplier;
     //--------------
   }
+  //--------------
   // Divide the total by the maximum possible value.
   // This safely keeps our final answer between 0.0-1.0.
+  //--------------
   return total/max_value;
   //--------------
 }
@@ -3495,8 +3596,9 @@ static float kross_math_noise_2d_perlin(float x, float y)
   // Instead of interpolating random values at the corners,
   // Perlin Noise assigns random direction vectors also known as gradients,
   // We use the exact same u/v logic from before but now we also calculate dot products.
-  int x0 = floorf(x);
-  int y0 = floorf(y);
+  //--------------
+  int x0 = x;
+  int y0 = y;
   int x1 = x0+1;
   int y1 = y0+1;
   float u = x-x0;
@@ -3515,10 +3617,12 @@ static float kross_math_noise_2d_perlin(float x, float y)
   // We do the same exact thing as with Value Noise,
   // But replace hash_2d with hash_gradient_2d.
   // Again it is simply a rectangle with direction vectors instead of plain x/y coords.
+  //--------------
   Vek2 g00 = kross_math_noise_hash_gradient_2d(x0, y0);
   Vek2 g10 = kross_math_noise_hash_gradient_2d(x1, y0);
   Vek2 g01 = kross_math_noise_hash_gradient_2d(x0, y1);
   Vek2 g11 = kross_math_noise_hash_gradient_2d(x1, y1);
+  //--------------
   //   (g00)                            (g10)
   //    *_______________________________*
   //    |                               |
@@ -3535,6 +3639,7 @@ static float kross_math_noise_2d_perlin(float x, float y)
   // For example, if our point is located dead center (0.5, 0.5),
   // The top right vector (d10) becomes (0.5-1.0, 0.5-0.0) = (-0.5, 0.5).
   // We remove 1 only from the x because x is the only one that changed, y remained the same.
+  //--------------
   Vek2 d00 = {u-0.0f, v-0.0f}; // Top-left to point.
   Vek2 d10 = {u-1.0f, v-0.0f}; // Top-right to point.
   Vek2 d01 = {u-0.0f, v-1.0f}; // bottom-left to point.
@@ -3549,6 +3654,7 @@ static float kross_math_noise_2d_perlin(float x, float y)
   // I had to watch like 4 different Perlin Noise videos and I still dont understand,
   // Also again, similarities with Value Noise,
   // These are just like the x0 y0 x1 y1 corners of the rectangles but with fancier names.
+  //--------------
   float n00 = kross_math_vek2_dot(g00, d00);
   float n10 = kross_math_vek2_dot(g10, d10);
   float n01 = kross_math_vek2_dot(g01, d01);
@@ -3556,6 +3662,7 @@ static float kross_math_noise_2d_perlin(float x, float y)
   //--------------
   // Again, more bilinear interpolation, horizontally left-right.
   // Then vertically top-bottom.
+  //--------------
   float row_top     = kross_math_lerp(n00, n10, fade_u);
   float row_bottom   = kross_math_lerp(n01, n11, fade_u);
   float finalised    = kross_math_lerp(row_top, row_bottom, fade_v);
@@ -3566,6 +3673,7 @@ static float kross_math_noise_2d_perlin(float x, float y)
   // In a 2D grid the max distance to the center of a cell is 0.707 (or atleast the internet says so).
   // This means the raw "finalised" value lands between -0.707 to +0.707
   // To get a clean 0-1 range, we are normalising it.
+  //--------------
   float normalised   = (finalised+0.707f)/1.414f;
   normalised = kross_math_clampf(normalised, 0.0f, 1.0f);
   return normalised;
@@ -3612,9 +3720,9 @@ static float kross_math_noise_3d_value(float x, float y, float z)
   // which acts just like u/v do but for the z coordinate.
   // So u for x, v for y, w for z.
   //--------------
-  int x0 = floorf(x);
-  int y0 = floorf(y);
-  int z0 = floorf(z);
+  int x0 = x;
+  int y0 = y;
+  int z0 = z;
   int x1 = x0+1;
   int y1 = y0+1;
   int z1 = z0+1;
@@ -3685,6 +3793,7 @@ static float kross_math_noise_3d_value_fbm(float x, float y, float z, int layer_
   // And here we do the same thing, its just like 2D FBM but with a z value.
   // The only thing that changes is that we now also sample the z value.
   // Everything else stays exactly the same.
+  //--------------
   float total = 0.0f;
   float amplitude = 1.0f;
   float frequency = 1.0f;
@@ -3692,7 +3801,6 @@ static float kross_math_noise_3d_value_fbm(float x, float y, float z, int layer_
   //--------------
   for (int i = 0; i < layer_count; ++i)
   {
-    //--------------
     float sample_x = x*frequency;
     float sample_y = y*frequency;
     float sample_z = z*frequency;
@@ -3701,7 +3809,6 @@ static float kross_math_noise_3d_value_fbm(float x, float y, float z, int layer_
     max_value += amplitude;
     frequency *= frequency_multiplier;
     amplitude *= amplitude_multiplier;
-    //--------------
   }
 
   return total/max_value;
@@ -3709,11 +3816,12 @@ static float kross_math_noise_3d_value_fbm(float x, float y, float z, int layer_
 // -------------------------------------
 static float kross_math_noise_3d_perlin(float x, float y, float z)
 {
+  // Credit: Ken Perlin.
   //--------------
   // This is also just like 2D Perlin Noise, but with a z value.
-  int x0 = floorf(x);
-  int y0 = floorf(y);
-  int z0 = floorf(z);
+  int x0 = x;
+  int y0 = y;
+  int z0 = z;
   int x1 = x0+1;
   int y1 = y0+1;
   int z1 = z0+1;
@@ -3732,6 +3840,7 @@ static float kross_math_noise_3d_perlin(float x, float y, float z)
   // Now they are the 8 corners of a cube.
   // And again just like we said for 3D Value Noise, we use the exact same variables,
   // and batch them in two groups, the z0 group, and the z1 group.
+  //--------------
   Vek3 g000   = kross_math_noise_hash_gradient_3d(x0, y0, z0);
   Vek3 g100   = kross_math_noise_hash_gradient_3d(x1, y0, z0);
   Vek3 g010   = kross_math_noise_hash_gradient_3d(x0, y1, z0);
@@ -3760,6 +3869,7 @@ static float kross_math_noise_3d_perlin(float x, float y, float z)
   //--------------
   // Again, we get the distance vectors, we only subtract from the ones that change.
   // So d100 gets u-1 because its x1 y0 z0, so x changes while y/z stay the same.
+  //--------------
   Vek3 d000 = {u-0.0f, v-0.0f, w-0.0f};
   Vek3 d100 = {u-1.0f, v-0.0f, w-0.0f};
   Vek3 d010 = {u-0.0f, v-1.0f, w-0.0f};
@@ -3788,9 +3898,11 @@ static float kross_math_noise_3d_perlin(float x, float y, float z)
   float back_face     = kross_math_lerp(back_top, back_bottom, fade_v);
   // Then we blend the front and back faces along the z-axis.
   float finalised     = kross_math_lerp(front_face, back_face, fade_w);
+  //--------------
   // Now for 2D the max distance was -0.707 to +0.707,
   // For 3D it is -0.866 to +0.866.
   // We normalise it and were good to go.
+  //--------------
   float normalised    = (finalised+0.866f)/1.732f;
   normalised = kross_math_clampf(normalised, 0.0f, 1.0f);
   return normalised;
@@ -3799,34 +3911,26 @@ static float kross_math_noise_3d_perlin(float x, float y, float z)
 // -------------------------------------
 static float kross_math_noise_3d_perlin_fbm(float x, float y, float z, int layer_count, float frequency_multiplier, float amplitude_multiplier)
 {
-  // This will store the final combined noise value.
   float total = 0.0f;
-  // How strong/tall the current layer of noise is.
   float amplitude = 1.0f;
-  // How tightly packed/detailed the current layer of noise is.
   float frequency = 1.0f;
-  // We track the maximum possible height so we can shrink the 
-  // final number back down to a clean 0.0 to 1.0 range later.
   float max_value = 0.0f;
-  // Loop through and stack each layer of noise on top of the last one.
+  //--------------
   for (int i = 0; i < layer_count; ++i)
   {
-    // Multiply our coordinates by the frequency to scale the detail.
     float sample_x = x*frequency;
     float sample_y = y*frequency;
     float sample_z = z*frequency;
-    // Get the noise value for this layer, multiply it by its strength (amplitude), and add it to our running total.
+    //--------------
     total += kross_math_noise_3d_perlin(sample_x, sample_y, sample_z)*amplitude;
-    // Add the current strength to our maximum possible value tracker.
     max_value += amplitude;
-    // Make the next layer have tighter, smaller details.
     frequency *= frequency_multiplier;
-    // Make the next layer much weaker so it doesnt overpower the main shape.
     amplitude *= amplitude_multiplier;
   }
-
+  //--------------
   // Divide the total by the maximum possible value.
   // This safely keeps our final answer between 0.0-1.0.
+  //--------------
   return total/max_value;
 }
 // -------------------------------------
