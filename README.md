@@ -12,8 +12,8 @@ I wont be accepting contributions because this is a personal project, and I want
 ## Examples
 <p align="center">
   <img src="screenshots/shot_snake.png" width="32%" alt="Interactive Snake Simulation">
+  <img src="screenshots/shot_kross.png" width="32%" alt="Interactive Pong Simulation">
   <img src="screenshots/shot_pong.png" width="32%" alt="Interactive Pong Simulation">
-  <img src="screenshots/shot_bezier.png" width="32%" alt="Interactive Bezier Simulation">
 </p>
 <p align="center">
   <img src="screenshots/shot_triangle.png" width="32%" alt="RGB Triangle Example">
