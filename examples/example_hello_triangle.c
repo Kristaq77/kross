@@ -1,6 +1,5 @@
 // -------------------------------------
 #define KROSS_IMPLEMENTATION
-#define KROSS_STRIP_PREFIX
 #include "kross.h"
 // -------------------------------------
 int main(void)
