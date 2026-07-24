@@ -17,6 +17,9 @@ I wont be accepting contributions because this is a personal project, and I want
 </p>
 <p align="center">
   <img src="screenshots/shot_triangle.png" width="32%" alt="RGB Triangle Example">
-  <img src="screenshots/shot_voronoi.png" width="32%" alt="Voronoi Diagram">
+  <img src="screenshots/shot_text.png" width="32%" alt="Text example">
   <img src="screenshots/shot_barycentric.png" width="32%" alt="Interactive Barycentric Simulation">
+</p>
+<p align="center">
+  <img src="screenshots/shot_voronoi.png" width="32%" alt="Voronoi Diagram">
 </p>
