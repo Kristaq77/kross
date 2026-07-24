@@ -5,7 +5,7 @@
 int main(void)
 {
   Kanvas* kv = kv_init(1280, 800);
-  kw_init(kv, "Voronoi Diagram");
+  kw_init(kv, "Text showcase");
   kw_target_fps(60);
   // --------------
   const char* text = "Kristaq77/Kross";
