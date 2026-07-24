@@ -19,11 +19,12 @@ I wont be accepting contributions (trust me you didnt want to contribute anyway)
 ## Examples
 
 <p align="center">
-  <img src="screenshots/snake_shot.png" width="32%" alt="Interactive Snake Simulation">
-  <img src="screenshots/pong_shot.png" width="32%" alt="Interactive Pong Simulation">
-  <img src="screenshots/bezier_shot.png" width="32%" alt="Interactive Bezier Simulation">
+  <img src="screenshots/shot_snake.png" width="32%" alt="Interactive Snake Simulation">
+  <img src="screenshots/shot_pong.png" width="32%" alt="Interactive Pong Simulation">
+  <img src="screenshots/shot_bezier.png" width="32%" alt="Interactive Bezier Simulation">
 </p>
 <p align="center">
-  <img src="screenshots/triangle_shot.png" width="32%" alt="RGB Triangle Example">
-  <img src="screenshots/barycentric_shot.png" width="32%" alt="Interactive Barycentric Simulation">
+  <img src="screenshots/shot_triangle.png" width="32%" alt="RGB Triangle Example">
+  <img src="screenshots/shot_voronoi.png" width="32%" alt="Voronoi Diagram">
+  <img src="screenshots/shot_barycentric.png" width="32%" alt="Interactive Barycentric Simulation">
 </p>
