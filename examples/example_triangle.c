@@ -1,6 +1,5 @@
 // -------------------------------------
 #define KROSS_IMPLEMENTATION
-#define KROSS_STRIP_PREFIX
 #include "kross.h"
 // -------------------------------------
 // These two functions live inisde Kross but they are static, so Ill just copy them here since I need them.
