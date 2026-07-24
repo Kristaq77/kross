@@ -1,9 +1,11 @@
-#define KROSS_IMPLEMENTATION
-#define KROSS_STRIP_PREFIX
-#include "kross.h"
+// -------------------------------------
 #include <math.h>
-
-// To be fully honest, this file was made with AI.
+// -------------------------------------
+#define KROSS_IMPLEMENTATION
+#include "kross.h"
+// -------------------------------------
+// WARNING: THIS WAS MADE WITH AI.
+// -------------------------------------
 int main(void)
 {
   Kanvas* kv = kv_init(640, 480);
@@ -101,3 +103,4 @@ int main(void)
   kv_free(kv);
   return 0;
 }
+// -------------------------------------
