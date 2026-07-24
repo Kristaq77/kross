@@ -1,6 +1,5 @@
 // -------------------------------------
 #define KROSS_IMPLEMENTATION
-#define KROSS_STRIP_PREFIX
 #include "kross.h"
 #include <stdlib.h>
 #include <stdbool.h>
