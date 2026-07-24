@@ -17,18 +17,17 @@ int main(void)
   kw_init(kv, "Voronoi Diagram");
   kw_target_fps(60);
   // --------------
-  Kolor kolors[] = {KLEAN_BLUE,   KLEAN_RED,    KLEAN_YELLOW, 
-                    KLEAN_ORANGE, KLEAN_PURPLE, KLEAN_GREEN};
+  Kolor kolors[] = {KLEAN_BLUE, KLEAN_RED, KLEAN_YELLOW, KLEAN_GREEN, KLEAN_PURPLE};
   // --------------
   srand((unsigned int)time(NULL));
   // --------------
-  Seed seeds[15];
+  Seed seeds[20];
   // --------------
-  for (int i = 0; i < 15; ++i)
+  for (int i = 0; i < 20; ++i)
   {
     seeds[i].x = rand()%kv->w;
     seeds[i].y = rand()%kv->h;
-    seeds[i].kl = kolors[i%6];
+    seeds[i].kl = kolors[i%5];
   }
   while (!kw_should_close())
   {
@@ -41,7 +40,7 @@ int main(void)
         Kolor seed_kolor = KLEAN_BLACK;
         int shortest = 2000000;
         // --------------
-        for (size_t i = 0; i < 15; ++i)
+        for (size_t i = 0; i < 20; ++i)
         {
           int x = seeds[i].x;
           int y = seeds[i].y;
