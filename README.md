@@ -1,4 +1,4 @@
-# kross
+# Kross
 Kross is a header-only software rasterizer with a tiny math "library", color manipulation, procedural noise, drawing primitives and more.
 It is my first big project after a good year of learning C and computer-graphics.
 ## Why this exists
