@@ -45,7 +45,7 @@ int main(void)
           int x = seeds[i].x;
           int y = seeds[i].y;
           // --------------
-          int dist = (dx-x) * (dx-x) + (dy-y) * (dy-y);
+          int dist = (dx-x)*(dx-x) + (dy-y)*(dy-y);
           // --------------
           if (dist < shortest)
           {
