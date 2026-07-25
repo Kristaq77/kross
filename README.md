@@ -11,7 +11,6 @@ I wont be accepting contributions because this is a personal project, and I want
 
 ## Examples
 <p align="center">
-  <img src="screenshots/shot_snake.png" width="32%" alt="Interactive Snake Simulation">
   <img src="screenshots/shot_kross.png" width="32%" alt="Interactive Pong Simulation">
   <img src="screenshots/shot_pong.png" width="32%" alt="Interactive Pong Simulation">
 </p>
@@ -22,4 +21,5 @@ I wont be accepting contributions because this is a personal project, and I want
 </p>
 <p align="center">
   <img src="screenshots/shot_voronoi.png" width="32%" alt="Voronoi Diagram">
+  <img src="screenshots/shot_snake.png" width="32%" alt="Interactive Snake Simulation">
 </p>
