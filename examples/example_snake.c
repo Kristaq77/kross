@@ -94,21 +94,22 @@ int main(void)
       head = &(parts[0]);
       needs_reset = false;
     }
-
+    // --------------
     kv_start(kv);
     kv_fill(kv, background_kolor);
+    kv_board(kv, 0, 0, MAX_COLS, MAX_ROWS, SQUARE_SIZE, (Kolor){10, 10, 10, 255}, (Kolor){16, 16, 16, 255});
     // --------------
     if (state == GAME_PLAYING)
     {
-      key_timer   += kw_delta()*4;
-      apple_timer += kw_delta()*3;
-      time_moved  += kw_delta();
+      key_timer   += kw_delta_time()*4;
+      apple_timer += kw_delta_time()*3;
+      time_moved  += kw_delta_time();
       snake_t      = time_moved/MOVE_DURATION;
       // --------------
-      if (ki_down(KI_W) && last_moved_dir != DOWN && key_timer > 0.5)       { key_timer = 0; dir = UP;    }
+      if      (ki_down(KI_W) && last_moved_dir != DOWN  && key_timer > 0.5) { key_timer = 0; dir = UP;    }
       else if (ki_down(KI_A) && last_moved_dir != RIGHT && key_timer > 0.5) { key_timer = 0; dir = LEFT;  }
-      else if (ki_down(KI_S) && last_moved_dir != UP && key_timer > 0.5)    { key_timer = 0; dir = DOWN;  }
-      else if (ki_down(KI_D) && last_moved_dir != LEFT && key_timer > 0.5)  { key_timer = 0; dir = RIGHT; }
+      else if (ki_down(KI_S) && last_moved_dir != UP    && key_timer > 0.5) { key_timer = 0; dir = DOWN;  }
+      else if (ki_down(KI_D) && last_moved_dir != LEFT  && key_timer > 0.5) { key_timer = 0; dir = RIGHT; }
       // --------------
       if (!apple_has_spawned)
       {
@@ -188,7 +189,6 @@ int main(void)
     Kolor apple_kolor_lerped = {apple_kolor.r, apple_kolor.g, apple_kolor.b, (uint8_t)(apple_timer*255)};
     // --------------
     kv_rect(kv, apple_x, apple_y, APPLE_SIZE, APPLE_SIZE, apple_kolor_lerped);
-    kv_grid(kv, 0, 0, MAX_COLS, MAX_ROWS, SQUARE_SIZE, STROKE_THICKNESS, grid_kolor);
     // --------------
     int axis[MAX_PARTS];
     // --------------
@@ -196,7 +196,7 @@ int main(void)
     {
       if (parts[i].pre_col != parts[i].col)      axis[i] = 1;
       else if (parts[i].pre_row != parts[i].row) axis[i] = 2;
-      else                                        axis[i] = 0;
+      else                                       axis[i] = 0;
     }
 
     for (size_t i = 0; i < count; ++i)
@@ -209,18 +209,20 @@ int main(void)
       // --------------
       kv_rect(kv, x, y, SQUARE_SIZE, SQUARE_SIZE, lerped_kolor);
       // --------------
-      if (i + 1 < count && axis[i] != 0 && axis[i+1] != 0 && axis[i] != axis[i+1])
+      if (i+1 < count && axis[i] != 0 && axis[i+1] != 0 && axis[i] != axis[i+1])
       {
-        int px = (int)(parts[i].pre_col * SQUARE_SIZE);
-        int py = (int)(parts[i].pre_row * SQUARE_SIZE);
+        int px = (int)(parts[i].pre_col*SQUARE_SIZE);
+        int py = (int)(parts[i].pre_row*SQUARE_SIZE);
         // --------------
         kv_rect(kv, px, py, SQUARE_SIZE, SQUARE_SIZE, lerped_kolor);
       }
     }
-
+    // --------------
+    kv_textf(kv, 20, 20, 3, apple_kolor, "SCORE: %zu", count-2);
+    // --------------
     if (state == GAME_OVER)
     {
-      death_timer += kw_delta();
+      death_timer += kw_delta_time();
       float fade = KMIN(death_timer/1.0f, 0.85f);
       Kolor overlay_kolor = {0, 0, 0, (uint8_t)(fade*255)};
       // --------------
