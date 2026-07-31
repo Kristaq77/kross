@@ -8,10 +8,9 @@ This project is dedicated to God and Orthodox Christianity, as a small thank you
 Kross is kross-platform (I think) but works best for Linux.
 ## Contribution
 I wont be accepting contributions because this is a personal project, and I want it to stay that way.
-
 ## Examples
 <p align="center">
-  <img src="screenshots/shot_kross.png" width="32%" alt="Interactive Pong Simulation">
+  <img src="screenshots/shot_kross.png" width="32%" alt="3D Kross Model">
   <img src="screenshots/shot_pong.png" width="32%" alt="Interactive Pong Simulation">
 </p>
 <p align="center">
@@ -21,5 +20,5 @@ I wont be accepting contributions because this is a personal project, and I want
 </p>
 <p align="center">
   <img src="screenshots/shot_voronoi.png" width="32%" alt="Voronoi Diagram">
-  <img src="screenshots/shot_snake.png" width="32%" alt="Interactive Snake Simulation">
+  <img src="screenshots/shot_khess.png" width="36%" alt="Interactive Chess Simulation">
 </p>
