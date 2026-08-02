@@ -29,7 +29,7 @@
 // -------------------------------------
 // The rasterizer part of my library is all written by me.
 // The GPU part of my library uses OpenGL to take what the CPU drew and put it on the screen,
-// That part was coded by AI, if you scroll to that section, (line: 2175), you will see why.
+// That part was coded by AI, if you scroll to that section, (line: 2132), you will see why.
 // -------------------------------------
 // TODO: Add more noise, preferrably Simplex but others will do.
 // TODO: Add QOI file support and comment all file functions.
@@ -106,8 +106,8 @@ extern "C" {
 #define KPASTEL_BROWN    (Kolor){200, 180, 160, 255}
 // -------------------------------------
 #define KSWAP(T, kr_a, kr_b) do { T _kross_tmp_t = kr_a; kr_a = kr_b; kr_b = _kross_tmp_t; } while (0)
-#define KMIN(kre_a, kre_b) ((kre_a) < (kre_b)) ? (kre_a) : (kre_b)
-#define KMAX(kre_a, kre_b) ((kre_a) > (kre_b)) ? (kre_a) : (kre_b)
+#define KMIN(kre_a, kre_b) (((kre_a) < (kre_b)) ? (kre_a) : (kre_b))
+#define KMAX(kre_a, kre_b) (((kre_a) > (kre_b)) ? (kre_a) : (kre_b))
 #define KPI 3.141592653589793238462643383279502
 // -------------------------------------
 typedef struct Kolor  { uint8_t r, g, b, a;                                    } Kolor;
@@ -248,7 +248,6 @@ Vek2    kv_nrm(Kanvas* kv);
 void    kv_blit(Kanvas* kv_main, Kanvas* kv_sub);
 void    kv_blitr(Kanvas* kv_main, Rekt start, Rekt end, Kanvas* kv_sub);
 void    kv_blur(Kanvas* kv, size_t radius);
-void    kv_vignette(Kanvas* kv, size_t radius);
 void    kv_grayscale(Kanvas* kv);
 void    kv_invert(Kanvas* kv);
 void    kv_pixel(Kanvas* kv, int x, int y, Kolor kolor);
@@ -453,8 +452,9 @@ void kv_save(Kanvas* kv, const char* path)
 // -------------------------------------
 void kv_free(Kanvas* kv)
 {
+  if (!kv)        return;
   if (kv->pixels) free(kv->pixels);
-  if (kv)         free(kv);
+  free(kv);
 }
 // -------------------------------------
 void kv_pixel(Kanvas* kv, int x, int y, Kolor kolor)
@@ -581,7 +581,7 @@ void kv_fill_horz(Kanvas* kv, Kolor kl_left, Kolor kl_right)
   }
 }
 // -------------------------------------
-void kv_fill_vert(Kanvas* kv, Kolor kl_bot, Kolor kl_top)
+void kv_fill_vert(Kanvas* kv, Kolor kl_top, Kolor kl_bot)
 { 
   //--------------
   // CHALLENGE
@@ -637,7 +637,7 @@ static Kanvas* kv_scale_nni(Kanvas* kv, float scale)
   if (!kv || !kv->pixels || scale <= 0.0f) return NULL;
   Kanvas* scaled = kv_init(kv->w*scale, kv->h*scale);
   if (!scaled) return NULL;
-  if (scale == 1.0f) return scaled;
+  if (scale == 1.0f) return kv_copy(kv);
   //--------------
   // Just like we will do in Bilinear, we invert the scale once here.
   // Multiplying by 0.5 is faster for the CPU than dividing by 2.0 thousands of times.
@@ -712,7 +712,7 @@ static Kanvas* kv_scale_bilinear(Kanvas* kv, float scale)
   if (!kv || !kv->pixels) return NULL;
   Kanvas* scaled = kv_init(kv->w*scale, kv->h*scale);
   if (!scaled || scale <= 0.0f) return NULL;
-  if (scale == 1.0f) return scaled;
+  if (scale == 1.0f) return kv_copy(kv);
   //--------------
   // We cache the inverted scale so we multiply instead of dividing.
   // Heres what I mean:
@@ -836,7 +836,7 @@ static Kanvas* kv_scale_bicubic(Kanvas* kv, float scale)
   if (!kv || !kv->pixels) return NULL;
   Kanvas* scaled = kv_init(kv->w*scale, kv->h*scale);
   if (!scaled || scale <= 0.0f) return NULL;
-  if (scale == 1.0f) return scaled;
+  if (scale == 1.0f) return kv_copy(kv);
   //--------------
   float scale_inv = 1.0f/scale;
   //--------------
@@ -1263,48 +1263,6 @@ void kv_blur(Kanvas* kv, size_t radius)
   //--------------
 }
 // -------------------------------------
-void kv_vignette(Kanvas* kv, size_t radius)
-{
-  //--------------
-  // As much as I would like to complain about this one,
-  // There really is no reason to,
-  // I didnt watch any painful yt tutorials, because I didnt find any.
-  // What I did is went StackOverflow hunting and found code,
-  // Then changed the names, and here we are.
-  // After looking at explanations online,
-  // Vignette is a dark circle, that starts at the screen-center
-  // Then expands outwards, as it expands it gets darker.
-  // At the center it is completely see-through,
-  // At the edges its completely dark.
-  //--------------
-  int cx = kv->w/2;
-  int cy = kv->h/2;
-  int sq_radius = radius*radius;
-  //--------------
-  for (int y = 0; y < (int)kv->h; ++y)
-  {
-    for (int x = 0; x < (int)kv->w; ++x)
-    {
-      //--------------
-      int dx = cx-x;
-      int dy = cy-y;
-      int sq_distance = dx*dx+dy*dy;
-      //--------------
-      if (sq_distance <= sq_radius) continue;
-      else
-      {
-        float factor = (float)sq_distance/(float)sq_radius;
-        factor = km_clampf(factor, 0, 1);
-        float intensity = 1.0f-factor;
-        Kolor kolor     = kl_get(kv, x, y);
-        Kolor scaled    = kl_scale(kolor, intensity);
-        kv_pixel(kv, x, y, scaled);
-      }
-      //--------------
-    }
-  }
-}
-// -------------------------------------
 void kv_grayscale(Kanvas* kv)
 {
   for (size_t i = 0; i < kv->w*kv->h; ++i)
@@ -1386,7 +1344,7 @@ void kv_rect_stroker(Kanvas* kv, Rekt rect, size_t thicc, Kolor kolor)
   kv_rect_stroke(kv, rect.x, rect.y, rect.w, rect.h, thicc, kolor);
 }
 // -------------------------------------
-bool kross_hit_rect_rect(int rect0_x, int rect0_y, size_t rect0_w, size_t rect0_h, int rect1_x, int rect1_y, size_t rect1_w, size_t rect1_h)
+bool km_hit_rect_rect(int rect0_x, int rect0_y, size_t rect0_w, size_t rect0_h, int rect1_x, int rect1_y, size_t rect1_w, size_t rect1_h)
 { 
   //--------------
   // Big thanks to jeffreythompson.org for this one,
@@ -1417,18 +1375,18 @@ bool kross_hit_rect_rect(int rect0_x, int rect0_y, size_t rect0_w, size_t rect0_
   //--------------
 }
 // -------------------------------------
-bool kross_hit_rect_rectv(Vek2 rect0, Vek2 rect0_size, Vek2 rect1, Vek2 rect1_size)
+bool km_hit_rect_rectv(Vek2 rect0, Vek2 rect0_size, Vek2 rect1, Vek2 rect1_size)
 {
-  return kross_hit_rect_rect((int)rect0.x, (int)rect0.y, (size_t)rect0_size.x, (size_t)rect0_size.y,
+  return km_hit_rect_rect((int)rect0.x, (int)rect0.y, (size_t)rect0_size.x, (size_t)rect0_size.y,
                              (int)rect1.x, (int)rect1.y, (size_t)rect1_size.x, (size_t)rect1_size.y);
 }
 // -------------------------------------
-bool kross_hit_rect_rectr(Rekt rect0, Rekt rect1)
+bool km_hit_rect_rectr(Rekt rect0, Rekt rect1)
 {
-  return kross_hit_rect_rect(rect0.x, rect0.y, rect0.w, rect0.h, rect1.x, rect1.y, rect1.w, rect1.h);
+  return km_hit_rect_rect(rect0.x, rect0.y, rect0.w, rect0.h, rect1.x, rect1.y, rect1.w, rect1.h);
 }
 // -------------------------------------
-bool kross_hit_rect_circle(int rect_x, int rect_y, size_t rect_w, size_t rect_h, int cx, int cy, size_t r)
+bool km_hit_rect_circle(int rect_x, int rect_y, size_t rect_w, size_t rect_h, int cx, int cy, size_t r)
 {
   //--------------
   int temp_x = cx;
@@ -1447,15 +1405,14 @@ bool kross_hit_rect_circle(int rect_x, int rect_y, size_t rect_w, size_t rect_h,
   //--------------
 }
 // -------------------------------------
-bool kross_hit_rect_circlev(Vek2 rect, Vek2 rect_size, Vek2 circle, size_t r)
+bool km_hit_rect_circlev(Vek2 rect, Vek2 rect_size, Vek2 circle, size_t r)
 {
-  return kross_hit_rect_circle((int)rect.x, (int)rect.y, (size_t)rect_size.x, (size_t)rect_size.y, (int)circle.x, (int)circle.y, r);
+  return km_hit_rect_circle((int)rect.x, (int)rect.y, (size_t)rect_size.x, (size_t)rect_size.y, (int)circle.x, (int)circle.y, r);
 }
 // -------------------------------------
-bool kross_hit_rect_circler(Rekt rect, Vek2 circle, size_t radius)
+bool km_hit_rect_circler(Rekt rect, Vek2 circle, size_t radius)
 {
-  return kross_hit_rect_circle((int)rect.x, (int)rect.y, rect.w, rect.h,
-                                     (int)circle.x, (int)circle.y, radius);
+  return km_hit_rect_circle((int)rect.x, (int)rect.y, rect.w, rect.h, (int)circle.x, (int)circle.y, radius);
 }
 // -------------------------------------
 float km_ease_in_quad(float t)
@@ -2131,8 +2088,8 @@ void kv_text_multi(Kanvas* kv, int x, int y, const char* text, size_t size, size
 
   while (*text)
   {
-    i++;
     kolor = (!kolors) ? KLEAN_BLUE : kolors[i%kolors_len];
+    i++;
     kv_text_char(kv, start_x, y, *text, size, kolor);
     start_x += GLYPH_WIDTH*size;
     text++;
@@ -2420,7 +2377,6 @@ void kw_free(void)
 // -------------------------------------
 Kolor kl_scale(Kolor kolor, float scale)
 {
-  if (scale <= 1) return kolor;
   uint8_t scaled_r = (kolor.r*scale <= 255) ? kolor.r*scale : 255;
   uint8_t scaled_g = (kolor.g*scale <= 255) ? kolor.g*scale : 255;
   uint8_t scaled_b = (kolor.b*scale <= 255) ? kolor.b*scale : 255;
@@ -2918,7 +2874,7 @@ Vek2 km_vek2_rotate(Vek2 v0, Vek2 center, float angle)
   float trans_x = v0.x-center.x;
   float trans_y = v0.y-center.y;
   float rot_x   = trans_x*cos_a-trans_y*sin_a;
-  float rot_y   = trans_y*cos_a-trans_x*sin_a;
+  float rot_y   = trans_x*sin_a+trans_y*cos_a;
   return (Vek2){rot_x+center.x, rot_y+center.y};
 }
 // -------------------------------------
@@ -3739,64 +3695,6 @@ double km_clampd(double value, double min, double max)
   if (value < min)        value = min;
   else if (value > max)   value = max;
   return value;
-}
-// -------------------------------------
-bool km_hit_rect_rect(int rect0_x, int rect0_y, size_t rect0_w, size_t rect0_h, int rect1_x, int rect1_y, size_t rect1_w, size_t rect1_h)
-{
-  int r0_right_edge   = rect0_x+rect0_w;
-  int r0_bottom_edge  = rect0_y+rect0_h;
-  int r1_right_edge   = rect1_x+rect1_w;
-  int r1_bottom_edge  = rect1_y+rect1_h;
-
-  if (r0_right_edge >= r1_right_edge &&
-      rect0_x <= r1_right_edge       &&
-      r0_bottom_edge >= rect0_y      &&
-      rect0_y <= r1_bottom_edge) return true;
-
-  return false;
-}
-// -------------------------------------
-bool km_hit_rect_rectv(Vek2 rect0, Vek2 rect0_size, Vek2 rect1, Vek2 rect1_size)
-{
-  return km_hit_rect_rect(rect0.x, rect0.y, rect0_size.x, rect0_size.y,
-                                  rect1.x, rect1.y, rect1_size.x, rect1_size.y);
-}
-// -------------------------------------
-bool km_hit_rect_rectr(Rekt rect0, Rekt rect1)
-{
-  return km_hit_rect_rect(rect0.x, rect0.y, rect0.w, rect0.h,
-                                  rect1.x, rect1.y, rect1.w, rect1.h);
-}
-// -------------------------------------
-bool km_hit_rect_circle(int rect_x, int rect_y, size_t rect_w, size_t rect_h, int cx, int cy, size_t r)
-{
-  float test_x = cx;
-  float test_y = cy;
-
-  if (cx < rect_x)                   test_x = rect_x;
-  else if (cx > (int)(rect_x+rect_w))  test_x = rect_x+rect_w;
-  if (cy < rect_y)                   test_y = rect_y;
-  else if (cy > (int)(rect_y+rect_h))  test_y = rect_y+rect_h;
-
-  float distX = cx-test_x;
-  float distY = cy-test_y;
-  float distance = sqrt((distX*distX)+(distY*distY));
-
-  if (distance <= r) return true;
-
-  return false;
-}
-// -------------------------------------
-bool km_hit_rect_circlev(Vek2 rect, Vek2 rect_size, Vek2 center, size_t r)
-{
-  return km_hit_rect_circle(rect.x, rect.y, rect_size.x, rect_size.y,
-                                    center.x, center.y, r);
-}
-// -------------------------------------
-bool km_hit_rect_circler(Rekt rect, Vek2 center, size_t r)
-{
-  return km_hit_rect_circle(rect.x, rect.y, rect.w, rect.h,
-                                    center.x, center.y, r);
 }
 // -------------------------------------
 #endif // KROSS_IMPLEMENTATION_GUARD
